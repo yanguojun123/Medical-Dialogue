@@ -1,15 +1,16 @@
-## M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
-### Introduction 
+# M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
+## Introduction 
 In this work, we create a multiple-domain multiple-service dataset with fine-grained medical labels for one-stop MDS.
 We fit NLU, DPL and NLG into a unified SeqMDS framework, based on which, we deploy several cutting-edge pretrained language models as benchmarks.
 Besides, we have introduced two data argumentation methods, i.e., pseudo labeling and natural perturbation, to generate synthetic data to enhance the model performance.
 Extensive experiments have demonstrated that SeqMDS can achieve good performance with different pretrained models as backends.
 
-### Running experiments
-#### Requirements
+## Requirements
 install the requirements within enviroment via pip:
 
 `pip install -r requirements.txt`
+
+### Running experiments
 
 #### Dataset
 
