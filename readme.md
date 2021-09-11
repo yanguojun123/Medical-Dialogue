@@ -14,7 +14,7 @@ dialogue datasets:
 
 knowledge:
 1) knowledge_entities:original complete knowledge base directory [link](http://xxx)
-2) knowledge.json(https://github.com/yanguojun123/Medical-Dialogue/blob/master/data/knowledge.json): knowledge to be used in the dataset
+2) [knowledge.json](https://github.com/yanguojun123/Medical-Dialogue/blob/master/data/knowledge.json): knowledge to be used in the dataset
 
 # 3. Requirements
 install the requirements within enviroment via pip:
