@@ -36,7 +36,7 @@ We use three strategies to build natural_pertubation dataset.
 `python natural_perturbation.py`
 
 
-# 5. Train & Validation & Inference
+# 5. Training & Inference
 
 BERT-WWM and BERT-MED(Running the following code can complete all processes of training, validation, inference and evaluation ):
 
