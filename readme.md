@@ -1,4 +1,4 @@
-## M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
+## $M^2$-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
 ### Paper Summary 
 In this work, we create a multiple-domain multiple-service dataset with fine-grained medical labels for one-stop MDS.
 We fit NLU, DPL and NLG into a unified SeqMDS framework, based on which, we deploy several cutting-edge pretrained language models as benchmarks.
@@ -45,7 +45,7 @@ We use three strategies to build natural_pertubation dataset.
 run the command:
 
 `python natural_perturbation.py`
-#### train&validation&inference
+#### Train&Validation&Inference
 
 BERT-WWM and BERT-MED(Running the following code can complete all processes of training, validation, inference and evaluation ):
 
@@ -68,7 +68,7 @@ for example:
 `sbatch run_mt5.sh mt5_test gpu06 4 human_annotation nlu groundtruth`
 
 
-#### evaluate
+#### Evaluate
 GPT2 and MT5:
 
 The format is the 'sbatch eva.sh [result_output_file]'
