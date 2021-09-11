@@ -7,14 +7,12 @@ Extensive experiments have demonstrated that SeqMDS can achieve good performance
 
 # 2. Data [[link]](http://xxx)
 
-dialogue datasets:
-1) [pseudo_labeling.txt](http://xxx): first fine-tuned dataset.
-2) natural_perturbation: second fine-tuned dataset
-3) human_annotation: third fine-tuned dataset
-
-knowledge:
-1) knowledge_entities:original complete knowledge base directory [link](http://xxx)
-2) [knowledge.json](https://github.com/yanguojun123/Medical-Dialogue/blob/master/data/knowledge.json): knowledge to be used in the dataset
+1) [pseudo_labeling.txt](http://xxx): We use pseudo label method to automatically label large-scale conversations called M^2-MedDialog-large.
+2) train_natural_perturbation: We use three methods of natural perturbation to enhance our train date.
+3) train_human_annotation.txt,dev_human_annotation.txt,test_human_annotation.txt: The dataset that we annotate manually and is also the dataset in our paper called M^2-MedDialog-small.
+4) knowledge_entities:original complete knowledge base directory [link](http://xxx)
+5) knowledge.json: knowledge to be used in the dataset.
+6) Total_data_normalization.json: Manually labeled raw data.
 
 # 3. Requirements
 Install the requirements within enviroment via pip:
@@ -43,7 +41,10 @@ We use it to process the original annotation file into the required format.
 
 The following slurm commands are used:
 
-The format is 'sbatch run_bert.sh [model_result_output_file] [nodelist] [model_name] [task_name]' for example:
+The format is 'sbatch run_bert.sh [model_result_output_file] [nodelist] [model_name] [task_name]' 
+
+For example:
+
 `sbatch run_bert.sh  bert-wwm_nlu gpu06 bert-wwm nlu`
 
 **GPT2:**
@@ -51,6 +52,7 @@ The format is 'sbatch run_bert.sh [model_result_output_file] [nodelist] [model_n
 The format is the 'sbatch run_gpt2.sh [model_result_output_file] [nodelist] [node_number][dataset_name] [inference_type]' and 'sbatch eva.sh [result_output_file]'.
 
 For example:
+
 `sbatch run_gpt2.sh gpt2_test gpu06 4 human_annoation groundtruth`
 
 `sbatch eva.sh gpt2_test.json`
@@ -60,12 +62,13 @@ For example:
 The format is the 'sbatch run_mt5.sh [model_result_output_file] [nodelist] [dataset_name] [task_name] [inference_type]' and 'sbatch eva.sh [result_output_file]'.
 
 For example:
+
 `sbatch run_mt5.sh mt5_test gpu06 4 human_annotation nlu groundtruth`
 
 `sbatch eva.sh mt5_test.json`
 
 # 6. Visulization
-You can get some pictures of relevant data results.
+You can get some pictures of relevant data results via python.
 
 `python plot.py`
 
