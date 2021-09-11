@@ -8,11 +8,8 @@ Extensive experiments have demonstrated that SeqMDS can achieve good performance
 # 2. Data [[link]](http://xxx)
 
 1) [pseudo_labeling.txt](http://xxx): We use pseudo label method to automatically label large-scale conversations called M^2-MedDialog-large.
-2) train_natural_perturbation: We use three methods of natural perturbation to enhance our train date.
-3) train_human_annotation.txt,dev_human_annotation.txt,test_human_annotation.txt: The dataset that we annotate manually and is also the dataset in our paper called M^2-MedDialog-small.
-4) knowledge_entities:original complete knowledge base directory [link](http://xxx)
-5) knowledge.json: knowledge to be used in the dataset.
-6) Total_data_normalization.json: Manually labeled raw data.
+2) train_natural_perturbation.txt,dev_natural_perturbation.txt: We use three methods of natural perturbation to enhance labeled date.
+3) train_human_annotation.txt,dev_human_annotation.txt,test_human_annotation.txt: Processed manually labeled dataset, is also the dataset in our paper called M^2-MedDialog-small.
 
 # 3. Requirements
 Install the requirements within enviroment via pip:
