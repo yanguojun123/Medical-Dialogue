@@ -1,18 +1,11 @@
 # M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
-## Introduction 
+1. Introduction 
 In this work, we create a multiple-domain multiple-service dataset with fine-grained medical labels for one-stop MDS.
 We fit NLU, DPL and NLG into a unified SeqMDS framework, based on which, we deploy several cutting-edge pretrained language models as benchmarks.
 Besides, we have introduced two data argumentation methods, i.e., pseudo labeling and natural perturbation, to generate synthetic data to enhance the model performance.
 Extensive experiments have demonstrated that SeqMDS can achieve good performance with different pretrained models as backends.
 
-## Requirements
-install the requirements within enviroment via pip:
-
-`pip install -r requirements.txt`
-
-### Running experiments
-
-#### Dataset
+2. Data
 
 dialogue datasets:
 1) pseudo_labeling: first fine-tuned dataset(Bsecause the size is too large, we didn't put it here.)
@@ -23,25 +16,24 @@ knowledge:
 1) knowledge_entities:original complete knowledge base directory
 2) knowledge.json: knowledge to be used in the dataset
 
-Intermediate_file:
-Some necessary intermediate files for generating datasets.
-#### Data Processing
-In our directory /data_process, we put all our related code about process data to get our final dataset.
+3. Requirements
+install the requirements within enviroment via pip:
 
-##### human_annotation
+`pip install -r requirements.txt`
+
+4. data proprocessing
+In our directory /data_process, we put all our related code about process data to get our final dataset.
+1) human_annotation
 We use it to process the original annotation file into the required format and add the corresponding knowledge.
 `python human_annotation.py`
 
-##### pseudo_labeling
+2) pseudo_labeling
 We use it to automatically label our large-scale conversations to get pseudo_labeling dataset.
 `python pseudo_labeling.py`
 
-##### natural_perturbation
+3) natural_perturbation
 We use three strategies to build natural_pertubation dataset.
 `python natural_perturbation.py`
-
-##### plot
-We use it to draw pictures of our results.
 
 
 #### Train & Validation & Inference
@@ -67,10 +59,13 @@ for example:
 `sbatch run_mt5.sh mt5_test gpu06 4 human_annotation nlu groundtruth`
 
 
-#### Evaluate
+### Evaluate
 GPT2 and MT5:
 
 The format is the 'sbatch eva.sh [result_output_file]'
 
 for example:
 `sbatch eva.sh gpt2_test.json`
+
+### plot
+We use it to draw pictures of our results.
