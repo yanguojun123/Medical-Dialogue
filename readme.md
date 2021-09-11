@@ -5,7 +5,7 @@ We fit NLU, DPL and NLG into a unified SeqMDS framework, based on which, we depl
 Besides, we have introduced two data argumentation methods, i.e., pseudo labeling and natural perturbation, to generate synthetic data to enhance the model performance.
 Extensive experiments have demonstrated that SeqMDS can achieve good performance with different pretrained models as backends.
 
-# 2. Data
+# 2. [Data](http://xxx)
 
 dialogue datasets:
 1) pseudo_labeling.txt: first fine-tuned dataset [link](http://xxx)
@@ -13,7 +13,7 @@ dialogue datasets:
 3) human_annotation: third fine-tuned dataset
 
 knowledge:
-1) knowledge_entities:original complete knowledge base directory
+1) knowledge_entities:original complete knowledge base directory [link](http://xxx)
 2) knowledge.json: knowledge to be used in the dataset
 
 # 3. Requirements
