@@ -1,17 +1,17 @@
-### M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
-#### Paper Summary 
+## M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
+### Paper Summary 
 In this work, we create a multiple-domain multiple-service dataset with fine-grained medical labels for one-stop MDS.
 We fit NLU, DPL and NLG into a unified SeqMDS framework, based on which, we deploy several cutting-edge pretrained language models as benchmarks.
 Besides, we have introduced two data argumentation methods, i.e., pseudo labeling and natural perturbation, to generate synthetic data to enhance the model performance.
 Extensive experiments have demonstrated that SeqMDS can achieve good performance with different pretrained models as backends.
 
-#### Running experiments
-##### Requirements
+### Running experiments
+#### Requirements
 install the requirements within enviroment via pip:
 
 `pip install -r requirements.txt`
 
-##### Datasets
+#### Datasets
 
 dialogue datasets:
 1) pseudo_labeling: first fine-tuned dataset(Bsecause the size is too large, we didn't put it here.)
@@ -23,28 +23,28 @@ knowledge:
 2) knowledge.json: knowledge to be used in the dataset
 
 dialogue 
-##### Data Process
+#### Data Process
 In our directory /data_process, we put all our related code about process data to get our final dataset.
 
 
-###### plot
+##### plot
 We use it to draw a picture of our results.
 
-###### Human_annotation
+##### Human_annotation
 Process the original annotation file into the required format and add the corresponding knowledge.
 
 `python human_annotation.py`
 
-###### pseudo_labeling
+##### pseudo_labeling
 We use it to automatically label our large-scale conversations.
 
-###### natural_perturbation
+##### natural_perturbation
 Three strategies are used to build natural_pertubation dataset.
 
 run the command:
 
 `python natural_perturbation.py`
-##### train&validation&inference
+#### train&validation&inference
 
 BERT-WWM and BERT-MED(Running the following code can complete all processes of training, validation, inference and evaluation ):
 
@@ -71,7 +71,7 @@ for example:
 `sbatch run_mt5.sh mt5_test gpu06 4 human_annotation nlu groundtruth`
 `
 
-##### evaluate
+#### evaluate
 GPT2 and MT5:
 
 using sbatch command:
