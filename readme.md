@@ -22,6 +22,8 @@ knowledge:
 1) knowledge_entities:original complete knowledge base directory
 2) knowledge.json: knowledge to be used in the dataset
 
+Intermediate_file:
+Some necessary intermediate files for generating datasets.
 #### Data Process
 In our directory /data_process, we put all our related code about process data to get our final dataset.
 
@@ -51,14 +53,14 @@ The following commands can use sbatch to run:
 The format is 'sbatch run_bert.sh [model_result_output_file] [nodelist] [model_name] [task_name]' for example:
 `sbatch run_bert.sh  bert-wwm_nlu gpu06 bert-wwm nlu`
 
-*GPT2:*
+**GPT2:**
 
 The format is the 'sbatch run_gpt2.sh [model_result_output_file] [nodelist] [node_number][dataset_name] [inference_type]'
 
 for example:
 `sbatch run_gpt2.sh gpt2_test gpu06 4 human_annoation groundtruth`
 
-*MT5:*
+**MT5:**
 
 The format is the 'sbatch run_mt5.sh [model_result_output_file] [nodelist] [dataset_name] [task_name] [inference_type]'
 
