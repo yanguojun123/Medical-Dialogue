@@ -11,7 +11,7 @@ install the requirements within enviroment via pip:
 
 `pip install -r requirements.txt`
 
-#### Datasets
+#### Dataset
 
 dialogue datasets:
 1) pseudo_labeling: first fine-tuned dataset(Bsecause the size is too large, we didn't put it here.)
@@ -24,28 +24,27 @@ knowledge:
 
 Intermediate_file:
 Some necessary intermediate files for generating datasets.
-#### Data Process
+#### Data Processing
 In our directory /data_process, we put all our related code about process data to get our final dataset.
-
-
-##### plot
-We use it to draw pictures of our results.
 
 ##### human_annotation
 We use it to process the original annotation file into the required format and add the corresponding knowledge.
-
 `python human_annotation.py`
 
 ##### pseudo_labeling
 We use it to automatically label our large-scale conversations to get pseudo_labeling dataset.
+`python pseudo_labeling.py`
 
 ##### natural_perturbation
 We use three strategies to build natural_pertubation dataset.
-
 run the command:
-
 `python natural_perturbation.py`
-#### Train&Validation&Inference
+
+##### plot
+We use it to draw pictures of our results.
+
+
+#### Train & Validation & Inference
 
 BERT-WWM and BERT-MED(Running the following code can complete all processes of training, validation, inference and evaluation ):
 
