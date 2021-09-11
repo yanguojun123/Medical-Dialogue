@@ -17,57 +17,57 @@ knowledge:
 2) [knowledge.json](https://github.com/yanguojun123/Medical-Dialogue/blob/master/data/knowledge.json): knowledge to be used in the dataset
 
 # 3. Requirements
-install the requirements within enviroment via pip:
+Install the requirements within enviroment via pip:
 
 `pip install -r requirements.txt`
 
 # 4. Data proprocessing
-In our directory /data_process, we put all our related code about process data to get our final dataset.
-1) human_annotation
-We use it to process the original annotation file into the required format and add the corresponding knowledge.
-`python human_annotation.py`
+In the directory, we put related code about processing data to get the corresponding dataset.
+The following python commands are used:
 
-2) pseudo_labeling
+1) pseudo_labeling
 We use it to automatically label our large-scale conversations to get pseudo_labeling dataset.
 `python pseudo_labeling.py`
 
-3) natural_perturbation
+2) natural_perturbation
 We use three strategies to build natural_pertubation dataset.
 `python natural_perturbation.py`
 
+3) human_annotation
+We use it to process the original annotation file into the required format.
+`python human_annotation.py`
 
 # 5. Training & Inference & Evaluation
 
-(Running the following code can complete all processes of training, validation, inference and evaluation ):
-
 **BERT-WWM** and **BERT-MED**
 
-The following commands can use sbatch to run:
+The following slurm commands are used:
+
 The format is 'sbatch run_bert.sh [model_result_output_file] [nodelist] [model_name] [task_name]' for example:
 `sbatch run_bert.sh  bert-wwm_nlu gpu06 bert-wwm nlu`
 
 **GPT2:**
 
-The format is the 'sbatch run_gpt2.sh [model_result_output_file] [nodelist] [node_number][dataset_name] [inference_type]'
+The format is the 'sbatch run_gpt2.sh [model_result_output_file] [nodelist] [node_number][dataset_name] [inference_type]' and 'sbatch eva.sh [result_output_file]'.
 
-for example:
+For example:
 `sbatch run_gpt2.sh gpt2_test gpu06 4 human_annoation groundtruth`
+
+`sbatch eva.sh gpt2_test.json`
 
 **MT5:**
 
-The format is the 'sbatch run_mt5.sh [model_result_output_file] [nodelist] [dataset_name] [task_name] [inference_type]'
+The format is the 'sbatch run_mt5.sh [model_result_output_file] [nodelist] [dataset_name] [task_name] [inference_type]' and 'sbatch eva.sh [result_output_file]'.
 
-for example:
+For example:
 `sbatch run_mt5.sh mt5_test gpu06 4 human_annotation nlu groundtruth`
-GPT2 and MT5:
 
-The format is the 'sbatch eva.sh [result_output_file]'
-
-for example:
-`sbatch eva.sh gpt2_test.json`
+`sbatch eva.sh mt5_test.json`
 
 # 6. Visulization
-We use it to draw pictures of our results.
+You can get some pictures of relevant data results.
+
+`python plot.py`
 
 # 7. Citation
 TBA
