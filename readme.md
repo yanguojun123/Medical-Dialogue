@@ -5,7 +5,7 @@ We fit NLU, DPL and NLG into a unified SeqMDS framework, based on which, we depl
 Besides, we have introduced two data argumentation methods, i.e., pseudo labeling and natural perturbation, to generate synthetic data to enhance the model performance.
 Extensive experiments have demonstrated that SeqMDS can achieve good performance with different pretrained models as backends.
 
-# 2. Data [[link]](http://xxx)
+# 2. Data [[link]](https://drive.google.com/drive/folders/1nxVEci21eU5KSejiWM4fwRlRELvkncpe?usp=sharing)
 
 1) [pseudo_labeling.txt](http://xxx): We use pseudo label method to automatically label large-scale conversations called M^2-MedDialog-large.
 2) train_natural_perturbation.txt,dev_natural_perturbation.txt: We use three methods of natural perturbation to enhance labeled date.
