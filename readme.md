@@ -38,7 +38,8 @@ We use three strategies to build natural_pertubation dataset.
 
 # 5. Training & Inference
 
-BERT-WWM and BERT-MED(Running the following code can complete all processes of training, validation, inference and evaluation ):
+**BERT-WWM** and **BERT-MED**
+(Running the following code can complete all processes of training, validation, inference and evaluation ):
 
 The following commands can use sbatch to run:
 The format is 'sbatch run_bert.sh [model_result_output_file] [nodelist] [model_name] [task_name]' for example:
@@ -57,9 +58,6 @@ The format is the 'sbatch run_mt5.sh [model_result_output_file] [nodelist] [data
 
 for example:
 `sbatch run_mt5.sh mt5_test gpu06 4 human_annotation nlu groundtruth`
-
-
-# 6. Evaluation
 GPT2 and MT5:
 
 The format is the 'sbatch eva.sh [result_output_file]'
