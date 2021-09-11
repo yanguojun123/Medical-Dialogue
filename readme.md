@@ -1,11 +1,11 @@
 # M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
-1. Introduction 
+# 1. Introduction 
 In this work, we create a multiple-domain multiple-service dataset with fine-grained medical labels for one-stop MDS.
 We fit NLU, DPL and NLG into a unified SeqMDS framework, based on which, we deploy several cutting-edge pretrained language models as benchmarks.
 Besides, we have introduced two data argumentation methods, i.e., pseudo labeling and natural perturbation, to generate synthetic data to enhance the model performance.
 Extensive experiments have demonstrated that SeqMDS can achieve good performance with different pretrained models as backends.
 
-2. Data
+# 2. Data
 
 dialogue datasets:
 1) pseudo_labeling: first fine-tuned dataset(Bsecause the size is too large, we didn't put it here.)
@@ -16,12 +16,12 @@ knowledge:
 1) knowledge_entities:original complete knowledge base directory
 2) knowledge.json: knowledge to be used in the dataset
 
-3. Requirements
+# 3. Requirements
 install the requirements within enviroment via pip:
 
 `pip install -r requirements.txt`
 
-4. data proprocessing
+# 4. data proprocessing
 In our directory /data_process, we put all our related code about process data to get our final dataset.
 1) human_annotation
 We use it to process the original annotation file into the required format and add the corresponding knowledge.
