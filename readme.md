@@ -21,7 +21,7 @@ install the requirements within enviroment via pip:
 
 `pip install -r requirements.txt`
 
-# 4. data proprocessing
+# 4. Data proprocessing
 In our directory /data_process, we put all our related code about process data to get our final dataset.
 1) human_annotation
 We use it to process the original annotation file into the required format and add the corresponding knowledge.
@@ -36,7 +36,7 @@ We use three strategies to build natural_pertubation dataset.
 `python natural_perturbation.py`
 
 
-#### Train & Validation & Inference
+# 5. Train & Validation & Inference
 
 BERT-WWM and BERT-MED(Running the following code can complete all processes of training, validation, inference and evaluation ):
 
@@ -67,5 +67,7 @@ The format is the 'sbatch eva.sh [result_output_file]'
 for example:
 `sbatch eva.sh gpt2_test.json`
 
-### plot
+# 6. Visulization
 We use it to draw pictures of our results.
+
+# 7. Citation
