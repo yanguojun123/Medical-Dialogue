@@ -37,7 +37,6 @@ We use it to automatically label our large-scale conversations to get pseudo_lab
 
 ##### natural_perturbation
 We use three strategies to build natural_pertubation dataset.
-run the command:
 `python natural_perturbation.py`
 
 ##### plot
