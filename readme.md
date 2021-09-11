@@ -8,7 +8,7 @@ Extensive experiments have demonstrated that SeqMDS can achieve good performance
 # 2. [Data](http://xxx)
 
 dialogue datasets:
-1) pseudo_labeling.txt: first fine-tuned dataset [link](http://xxx)
+1) [pseudo_labeling.txt](http://xxx): first fine-tuned dataset.
 2) natural_perturbation: second fine-tuned dataset
 3) human_annotation: third fine-tuned dataset
 
