@@ -36,10 +36,11 @@ We use three strategies to build natural_pertubation dataset.
 `python natural_perturbation.py`
 
 
-# 5. Training & Inference
+# 5. Training & Inference & Evaluation
+
+(Running the following code can complete all processes of training, validation, inference and evaluation ):
 
 **BERT-WWM** and **BERT-MED**
-(Running the following code can complete all processes of training, validation, inference and evaluation ):
 
 The following commands can use sbatch to run:
 The format is 'sbatch run_bert.sh [model_result_output_file] [nodelist] [model_name] [task_name]' for example:
