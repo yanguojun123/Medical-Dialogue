@@ -59,7 +59,7 @@ for example:
 `sbatch run_mt5.sh mt5_test gpu06 4 human_annotation nlu groundtruth`
 
 
-### Evaluate
+# 6. Evaluation
 GPT2 and MT5:
 
 The format is the 'sbatch eva.sh [result_output_file]'
