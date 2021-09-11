@@ -1,0 +1,52 @@
+{
+    "links": [
+        [
+            "日光性雀斑样痣",
+            "临床症状及体征",
+            [
+                "斑疹",
+                "瘀斑"
+            ]
+        ],
+        [
+            "日光性雀斑样痣",
+            "UMLS",
+            [
+                "http://linkedlifedata.com/resource/umls/id/C0027962",
+                "http://linkedlifedata.com/resource/umls/id/C0477498",
+                "http://linkedlifedata.com/resource/umls/id/C0494870",
+                "http://linkedlifedata.com/resource/umls/id/C0349062"
+            ]
+        ],
+        [
+            "日光性雀斑样痣",
+            "所属科室",
+            [
+                "皮肤科",
+                "普通外科",
+                "肿瘤科"
+            ]
+        ],
+        [
+            "日光性雀斑样痣",
+            "ICD-10",
+            [
+                "D22.1",
+                "L81.4",
+                "L57.8",
+                "D26",
+                "D22.9"
+            ]
+        ],
+        [
+            "日光性雀斑样痣",
+            "治疗方案",
+            [
+                "维a酸",
+                "氢醌"
+            ]
+        ]
+    ],
+    "type": "疾病",
+    "name": "日光性雀斑样痣"
+}

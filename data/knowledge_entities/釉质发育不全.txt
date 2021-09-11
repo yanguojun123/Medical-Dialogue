@@ -1,0 +1,38 @@
+{
+    "links": [
+        [
+            "釉质发育不全",
+            "UMLS",
+            [
+                "http://linkedlifedata.com/resource/umls/id/C0348718",
+                "http://linkedlifedata.com/resource/umls/id/C3495540",
+                "http://linkedlifedata.com/resource/umls/id/C0868847"
+            ]
+        ],
+        [
+            "釉质发育不全",
+            "所属科室",
+            [
+                "口腔科"
+            ]
+        ],
+        [
+            "釉质发育不全",
+            "ICD-10",
+            [
+                "K00.8",
+                "K00.5",
+                "K00.4"
+            ]
+        ],
+        [
+            "釉质发育不全",
+            "临床症状及体征",
+            [
+                "感染"
+            ]
+        ]
+    ],
+    "type": "疾病",
+    "name": "釉质发育不全"
+}

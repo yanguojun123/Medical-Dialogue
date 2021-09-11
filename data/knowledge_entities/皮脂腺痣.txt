@@ -1,0 +1,54 @@
+{
+    "links": [
+        [
+            "皮脂腺痣",
+            "UMLS",
+            [
+                "http://linkedlifedata.com/resource/umls/id/C0494876",
+                "http://linkedlifedata.com/resource/umls/id/C0004997",
+                "http://linkedlifedata.com/resource/umls/id/C0477513",
+                "http://linkedlifedata.com/resource/umls/id/C0027962"
+            ]
+        ],
+        [
+            "皮脂腺痣",
+            "ICD-10",
+            [
+                "L85.9",
+                "D27"
+            ]
+        ],
+        [
+            "皮脂腺痣",
+            "发病部位",
+            [
+                "头皮"
+            ]
+        ],
+        [
+            "皮脂腺痣",
+            "多发群体",
+            [
+                "出生后不久",
+                "多于出生时"
+            ]
+        ],
+        [
+            "皮脂腺痣",
+            "临床症状及体征",
+            [
+                "结节",
+                "头皮"
+            ]
+        ],
+        [
+            "皮脂腺痣",
+            "所属科室",
+            [
+                "普通外科"
+            ]
+        ]
+    ],
+    "type": "疾病",
+    "name": "皮脂腺痣"
+}

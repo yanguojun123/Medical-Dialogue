@@ -1,0 +1,44 @@
+{
+    "links": [
+        [
+            "左束支传导阻滞",
+            "UMLS",
+            [
+                "http://linkedlifedata.com/resource/umls/id/C0155708",
+                "http://linkedlifedata.com/resource/umls/id/C0023211",
+                "http://linkedlifedata.com/resource/umls/id/C0494597",
+                "http://linkedlifedata.com/resource/umls/id/C0264913"
+            ]
+        ],
+        [
+            "左束支传导阻滞",
+            "所属科室",
+            [
+                "心血管内科"
+            ]
+        ],
+        [
+            "左束支传导阻滞",
+            "ICD-10",
+            [
+                "I45.8",
+                "I44.5",
+                "I44.7",
+                "I45.4"
+            ]
+        ],
+        [
+            "左束支传导阻滞",
+            "治疗方案",
+            [
+                "奎尼丁",
+                "利多卡因",
+                "普鲁卡因胺",
+                "普鲁卡因",
+                "丙吡胺"
+            ]
+        ]
+    ],
+    "type": "疾病",
+    "name": "左束支传导阻滞"
+}

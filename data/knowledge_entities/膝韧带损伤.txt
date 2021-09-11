@@ -1,0 +1,51 @@
+{
+    "links": [
+        [
+            "膝韧带损伤",
+            "病因",
+            [
+                "暴力"
+            ]
+        ],
+        [
+            "膝韧带损伤",
+            "UMLS",
+            [
+                "http://linkedlifedata.com/resource/umls/id/C0495958",
+                "http://linkedlifedata.com/resource/umls/id/C0478345",
+                "http://linkedlifedata.com/resource/umls/id/C0263976"
+            ]
+        ],
+        [
+            "膝韧带损伤",
+            "所属科室",
+            [
+                "外壳",
+                "骨科",
+                "外科"
+            ]
+        ],
+        [
+            "膝韧带损伤",
+            "ICD-10",
+            [
+                "S89.9",
+                "M24.2",
+                "S89.8"
+            ]
+        ],
+        [
+            "膝韧带损伤",
+            "临床症状及体征",
+            [
+                "肿痛",
+                "疼痛",
+                "肿胀",
+                "压痛",
+                "出血"
+            ]
+        ]
+    ],
+    "type": "疾病",
+    "name": "膝韧带损伤"
+}

@@ -1,0 +1,52 @@
+local bert_model = "../bert_model/MTBERT/";
+local bert_archive = "../bert_model/MTBERT";
+{
+    "dataset_reader": {
+        "type": "mds_reader",
+        "model": "hfl/MTBERT",
+        "tokenizer": {
+            "type": "pretrained_transformer",
+            "model_name": bert_model,
+        },
+        "token_indexers": {
+            "bert": {
+                "type": "pretrained_transformer",
+                "model_name": bert_model,
+            }
+        },
+        "max_tokens":512
+        },
+  //"train_data_path": "../../../MedicalData/train_WK_90000_action.txt",
+      "train_data_path": "../data/0831/train_knowledge_num5.txt",
+  "validation_data_path": "../data/0831/dev_knowledge_num5.txt",
+  "test_data_path": "../data/0831/test_knowledge_num5.txt",
+   //       "train_data_path": "../data/0831/train_argumentation_new.txt",
+  //"validation_data_path": "../data/0831/dev_argumentation_new.txt",
+  //"test_data_path": "../data/0831/test_action.txt",
+  "evaluate_on_test": true,
+  "model": {
+    "type": "from_archive",
+    "archive_file": "../topic_predict/tmp/mbert_argue_pl_ft2/model.tar.gz"
+  },
+    //"iterator": {
+     //   "type": "basic",
+     //   "batch_size": 6,
+   // },
+    "data_loader": {
+        "batch_size": 8,
+        "shuffle": true
+    },
+    "trainer": {
+        "optimizer": {
+            "type": "huggingface_adamw",
+            "lr": 0.00002
+        },
+        "validation_metric": "+f1_micro_sk_intent_slot",
+        "num_epochs": 30,
+        "patience": 10,
+        "grad_norm": 20.0
+        },
+        "distributed": {
+        "cuda_devices": [0, 1]
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "links": [
+        [
+            "颈部纤维瘤",
+            "UMLS",
+            [
+                "http://linkedlifedata.com/resource/umls/id/C0477529",
+                "http://linkedlifedata.com/resource/umls/id/C0477670"
+            ]
+        ],
+        [
+            "颈部纤维瘤",
+            "所属科室",
+            [
+                "肿瘤科",
+                "皮肤科"
+            ]
+        ],
+        [
+            "颈部纤维瘤",
+            "ICD-10",
+            [
+                "L98.8",
+                "M72.9"
+            ]
+        ],
+        [
+            "颈部纤维瘤",
+            "临床症状及体征",
+            [
+                "斜颈"
+            ]
+        ]
+    ],
+    "type": "疾病",
+    "name": "颈部纤维瘤"
+}

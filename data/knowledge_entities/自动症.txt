@@ -1,0 +1,33 @@
+{
+    "links": [
+        [
+            "自动症",
+            "UMLS",
+            [
+                "http://linkedlifedata.com/resource/umls/id/C0478136",
+                "http://linkedlifedata.com/resource/umls/id/C0015480"
+            ]
+        ],
+        [
+            "自动症",
+            "ICD-10",
+            [
+                "R41.8",
+                "F68.1"
+            ]
+        ],
+        [
+            "自动症",
+            "临床症状及体征",
+            [
+                "咂嘴",
+                "躯干肢体无目的不规则运动",
+                "咀嚼",
+                "吸吮",
+                "吞咽"
+            ]
+        ]
+    ],
+    "type": "疾病",
+    "name": "自动症"
+}

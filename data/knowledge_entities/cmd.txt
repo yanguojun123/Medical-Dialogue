@@ -1,0 +1,30 @@
+{
+    "links": [
+        [
+            "先天性肌营养不良",
+            "UMLS",
+            [
+                "http://linkedlifedata.com/resource/umls/id/C0026850"
+            ]
+        ],
+        [
+            "先天性肌营养不良",
+            "ICD-10",
+            [
+                "G71.0"
+            ]
+        ],
+        [
+            "先天性肌营养不良",
+            "病理分型",
+            [
+                "Walker-Warburg综合征",
+                "Fukuyama CMD",
+                "肌-眼-脑病",
+                "Laminin-α2链缺乏型CMD"
+            ]
+        ]
+    ],
+    "type": "疾病",
+    "name": "先天性肌营养不良"
+}

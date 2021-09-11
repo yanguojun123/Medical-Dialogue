@@ -1,0 +1,56 @@
+{
+    "links": [
+        [
+            "单核细胞白血病",
+            "发病机制",
+            [
+                "Eo的inv（16）"
+            ]
+        ],
+        [
+            "单核细胞白血病",
+            "UMLS",
+            [
+                "http://linkedlifedata.com/resource/umls/id/C0029670",
+                "http://linkedlifedata.com/resource/umls/id/C0598894",
+                "http://linkedlifedata.com/resource/umls/id/C0023470",
+                "http://linkedlifedata.com/resource/umls/id/C0023479"
+            ]
+        ],
+        [
+            "单核细胞白血病",
+            "所属科室",
+            [
+                "皮肤科",
+                "肿瘤科"
+            ]
+        ],
+        [
+            "单核细胞白血病",
+            "ICD-10",
+            [
+                "C92",
+                "C92.5",
+                "C93.9",
+                "C92.7"
+            ]
+        ],
+        [
+            "单核细胞白血病",
+            "临床症状及体征",
+            [
+                "溃疡",
+                "坏死",
+                "齿龈增生",
+                "出血",
+                "皮肤",
+                "结节",
+                "皮肤损害",
+                "丘疹",
+                "水疱"
+            ]
+        ]
+    ],
+    "type": "疾病",
+    "name": "单核细胞白血病"
+}
