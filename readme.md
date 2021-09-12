@@ -21,17 +21,20 @@ Install the requirements within enviroment via pip:
 In the directory, we put related code about processing data to get the corresponding dataset.
 The following python commands are used:
 
-1) pseudo_labeling
+1) pseudo_labeling.
+
 We use it to automatically label our large-scale conversations to get pseudo_labeling dataset.
 
     `python pseudo_labeling.py`
 
-2) natural_perturbation
+2) natural_perturbation.
+
 We use three strategies to build natural_pertubation dataset.
 
     `python natural_perturbation.py`
 
-3) human_annotation
+3) human_annotation.
+
 We use it to process the original annotation file into the required format.
 
     `python human_annotation.py`
