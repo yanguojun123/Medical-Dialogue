@@ -1,9 +1,9 @@
 # M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
 # 1. Introduction 
-In this work, we create a multiple-domain multiple-service dataset with fine-grained medical labels for one-stop MDS.
-We fit NLU, DPL and NLG into a unified SeqMDS framework, based on which, we deploy several cutting-edge pretrained language models as benchmarks.
-Besides, we have introduced two data argumentation methods, i.e., pseudo labeling and natural perturbation, to generate synthetic data to enhance the model performance.
-Extensive experiments have demonstrated that SeqMDS can achieve good performance with different pretrained models as backends.
+Medical dialogue systems aim to assist doctors and patients with a range of professional medical services, i.e., diagnosis, consultation, and treatment. However, one-stop is still unexplored because: (1) no dataset has so large-scale dialogues contains both multiple medical services and fine-grained medical labels (i.e., intents, slots, values); (2) no model has addressed a based on multiple-service conversations in a unified framework.
+In this work, we first build a M^2-MedDialog dataset, which contains 1,557 conversations between doctors and patients, covering 276 types of diseases, 2,468 medical entities, and 3 specialties of medical services. It has 5 intents, 7 actions, 20 slots and 2,468 candidate values in medical domain. To the best of our knowledge, it is the only medical dialogue dataset that includes both multiple medical services and fine-grained medical labels. Then, we formulate a one-stop MDS as a sequence-to-sequence generation problem. We unify a MDS with causal language modeling and conditional causal language modeling, respectively. Specifically, we employ several pretrained models (i.e., BERT-WWM, BERT-MED, GPT2, and MT5) and their variants to get benchmarks on M^2-MedDialog dataset. We also propose pseudo labeling and natural perturbation methods to expand M^2-MedDialog dataset and enhance the state-of-the-art pretrained models.
+We demonstrate the results achieved by the benchmarks so far through extensive experiments on M^2-MedDialog. We release the dataset, the code, as well as the evaluation scripts to facilitate future research in this important research direction.
+ 
 
 # 2. [Data](https://drive.google.com/drive/folders/1nxVEci21eU5KSejiWM4fwRlRELvkncpe?usp=sharing)
 The following three kinds datasets are fine tuned in order during training.
