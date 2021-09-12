@@ -5,7 +5,7 @@ In this work, we first build a M^2-MedDialog dataset, which contains 1,557 conve
 We demonstrate the results achieved by the benchmarks so far through extensive experiments on M^2-MedDialog. We release the dataset, the code, as well as the evaluation scripts to facilitate future research in this important research direction.
  
 
-# 2. Data[[link]](https://drive.google.com/drive/folders/1nxVEci21eU5KSejiWM4fwRlRELvkncpe?usp=sharing)
+# 2. [Data](https://drive.google.com/drive/folders/1nxVEci21eU5KSejiWM4fwRlRELvkncpe?usp=sharing)
 The following three kinds datasets are fine tuned in order during training.
 
 1) train_pseudo_labeling.txt,dev_pseudo_labeling.txt: We use pseudo labeling algorithm to automatically label large-scale conversations called M^2-MedDialog-large.
