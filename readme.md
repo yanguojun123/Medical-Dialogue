@@ -48,6 +48,7 @@ For example:
 **GPT2:**
 
 The format is the 'sbatch run_gpt2.sh [model_result_output_file] [nodelist] [node_number][dataset_name] [inference_type]' and 'sbatch eva.sh [result_output_file]'.
+You can use two commands to training & inference and evaluation respectively.
 
 For example:
 
@@ -58,6 +59,7 @@ For example:
 **MT5:**
 
 The format is the 'sbatch run_mt5.sh [model_result_output_file] [nodelist] [dataset_name] [task_name] [inference_type]' and 'sbatch eva.sh [result_output_file]'.
+You can use two commands to training & inference and evaluation respectively.
 
 For example:
 
