@@ -24,17 +24,17 @@ The following python commands are used:
 1) pseudo_labeling
 We use it to automatically label our large-scale conversations to get pseudo_labeling dataset.
 
-`python pseudo_labeling.py`
+  `python pseudo_labeling.py`
 
 2) natural_perturbation
 We use three strategies to build natural_pertubation dataset.
 
-`python natural_perturbation.py`
+  `python natural_perturbation.py`
 
 3) human_annotation
 We use it to process the original annotation file into the required format.
 
-`python human_annotation.py`
+  `python human_annotation.py`
 
 # 5. Training & Inference & Evaluation
 
