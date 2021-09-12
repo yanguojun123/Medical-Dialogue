@@ -1214,6 +1214,7 @@ def main():
             model = MT5ForConditionalGeneration.from_pretrained(min_model)
             model.to(device)
             generate(model, tokenizer, test_list, args, device)
+
     if args.model == 'test':
         min_model = 'model/mt5_ppl_WON_ft3_model/model_epoch19/'
         model = MT5ForConditionalGeneration.from_pretrained(min_model)

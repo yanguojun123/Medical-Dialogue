@@ -1,4 +1,4 @@
-## $M^2$-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
+## M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
 ### Paper Summary 
 In this work, we create a multiple-domain multiple-service dataset with fine-grained medical labels for one-stop MDS.
 We fit NLU, DPL and NLG into a unified SeqMDS framework, based on which, we deploy several cutting-edge pretrained language models as benchmarks.
