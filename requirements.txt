@@ -6,3 +6,4 @@ allennlp==2.2.0
 torchvision==0.9.0
 transformers==4.4.2
 matplotlib==3.3.3
+tensorboard=2.7.0

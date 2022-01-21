@@ -3,7 +3,7 @@ import nltk
 from nltk.translate.meteor_score import *
 from nltk.translate.bleu_score import corpus_bleu, sentence_bleu, SmoothingFunction
 # nlgeval = NLGEval()
-from util.args import ArgsParser
+from common.args import ArgsParser
 import numpy as np
 import json
 import re
@@ -79,48 +79,24 @@ metric = {'NLU': {},
           'AP': {},
           'RG': {}}
 
-
-def compute_bleu(reference=None, translation=None):
-    if reference and translation:
-        reference = reference.split('\n')
-        translation = translation.split('\n')
-        inf_tok = [[nltk.tokenize.word_tokenize(i)] for i in reference]
-        tra_tok = [nltk.tokenize.word_tokenize(t) for t in translation]
-        chencherry = SmoothingFunction()
-        return corpus_bleu(inf_tok, tra_tok, smoothing_function=chencherry.method7)
-    else:
-        return "The file content is empty!"
-
-
 def exist_chinese(string):
+    """
+    Judge whether there is Chinese
+    :param string:Generated string
+    :return:
+    """
     string = re.sub('\'\'', '', string)
     for s in string:
         if u'\u4e00' <= s <= u'\u9fff':
             return s
     return 'F'
 
-
-def distinct1(pred):
-    total_vocabs = 0
-    appear_vocabs = set()
-    for index in pred:
-        total_vocabs += len(index)
-        appear_vocabs.update(index)
-    return len(appear_vocabs) / total_vocabs
-
-
-def distinct2(pred):
-    total_vocabs = 0
-    appear_vocabs = set()
-    for index in pred:
-        if len(index) <= 1:
-            continue
-        total_vocabs += len(index) - 1
-        for i in range(len(index) - 1):
-            appear_vocabs.update(index[i] + index[i + 1])
-    return len(appear_vocabs) / total_vocabs
-
-def split_chinese(str):#拆分中文
+def split_chinese(str):
+    """
+    Split Chinese
+    :param str:Processed string
+    :return:Chinese string, connected with a space in the middle
+    """
     temp1=str.split(' ')
     res=[]
     for x in temp1:
@@ -131,6 +107,10 @@ def split_chinese(str):#拆分中文
     return ''.join(res)
 
 def intent_evaluation():
+    """
+    Evaluate NLU
+    :return:
+    """
     y_pred_intent = []
     y_gt_intent = []
     y_pred_intent_slot = []
@@ -158,14 +138,14 @@ def intent_evaluation():
         # print(result['' + str(x)]['generated_intent'])
         #print(len(result[x]['generated_intent']),len(result[x]['target_intent']))
         for y in range(min(len(result[x]['generated_intent']), len(result[x]['target_intent']))):
-            # 保存分类结果的列表
+
             #print("sdsds")
             y_pred_intent_temp = [0] * 5
             y_gt_intent_temp = [0] * 5
             y_pred_intent_slot_temp = [0] * len(intent_slot1.keys())
             y_gt_intent_slot_temp = [0] * len(intent_slot1.keys())
 
-            # 将groundtruth的action拆分开来
+            # Split the actions of the ground truth
             ref_intent_temp = result[x]['target_intent'][y]
             #print("ref_intent_temp:",ref_intent_temp)
             ref_intent_temp = re.sub('\'\'', '', ref_intent_temp)
@@ -182,7 +162,7 @@ def intent_evaluation():
 
             total_action += len(ref_intent_temp)
 
-            for i in ref_intent_temp:  # 将相应的位置变为1
+            for i in ref_intent_temp:  # Change the corresponding position to 1
                 i = re.sub('\'\'', '', i)
                 if exist_chinese(i) != 'F' and (i.split(exist_chinese(i))[0]).strip() in intent_slot1.keys():
                     y_gt_intent_slot_temp[int(intent_slot1['' + (i.split(exist_chinese(i))[0]).strip()])] = 1
@@ -195,11 +175,11 @@ def intent_evaluation():
                 if i.strip() in intent1.keys():
                     y_gt_intent_temp[int(intent1['' + i.strip()])] = 1
 
-            # 处理生成的action
+            #Process generated actions
             generate_intent = pattern.sub(r'\1\2', result[x]['generated_intent'][y][1:-1])
             generate_intent = pattern.sub(r'\1\2', generate_intent)
 
-            #print(split_chinese('你好啊'),split_chinese(' 你 好 啊 '))
+
             hyp_delete_english = re.sub('[\sa-zA-Z]', '', generate_intent)
             if ref_delete_english != '':
                 hyp_value_list.append(' '.join(list(split_chinese(hyp_delete_english))))
@@ -283,6 +263,10 @@ def intent_evaluation():
 
 
 def action_evaluation():
+    """
+    Evaluate DPL task
+    :return:
+    """
     y_pred_intent = []
     y_gt_intent = []
     y_pred_intent_slot = []
@@ -422,6 +406,10 @@ def action_evaluation():
 
 
 def generate_text():
+    """
+    Evaluate response
+    :return:
+    """
     result_path = args.evaluation_path
     result = json.load(open(result_path, 'r', encoding='utf-8'))
     hyp = open('hyp.txt', 'w', encoding='utf-8')

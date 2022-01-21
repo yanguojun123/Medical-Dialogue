@@ -35,7 +35,7 @@ medicine_entity = open('../data/Intermediate_file/medicine_new.txt', 'r', encodi
 check_item_entity = open('../data/Intermediate_file/check_item_new.txt', 'r', encoding='utf-8').read().split(',')
 knowledge_entity = disease_entity + symptom_entity + medicine_entity + check_item_entity
 
-entity = os.listdir('../data/knowledge_entities')
+entity = os.listdir('../data/intermediate_file/knowledge_entities')
 
 
 #get knowledge from the action
@@ -48,7 +48,7 @@ def action_knowledge_new(actions, state , role, knowledge_list):
     :param knowledge_list:List of knowledge to be matched
     :return:
     """
-    triple = ['intent', 'slot', 'aspect', 'value']
+    triple = ['intent', 'slot', 'value1', 'value2']
     res = ''
     knowledge = []
     temp1 = []
@@ -57,13 +57,13 @@ def action_knowledge_new(actions, state , role, knowledge_list):
     temp = ['', '', '']
 
     for action in actions:
-         if 'slot' in action.keys() and 'aspect' in action.keys() and action['aspect'] in knowledge_entity:
-            state.append(action['aspect'])
+         if 'slot' in action.keys() and 'value1' in action.keys() and action['value1'] in knowledge_entity:
+            state.append(action['value1'])
          if role == 'doctor' and 'slot' in action.keys() and action['slot'] in key_map.keys():
-             if 'aspect' in action.keys():
+             if 'value1' in action.keys():
                  temp1 += state
                  temp2 += key_map[action['slot']]
-                 temp3.append(action['aspect'])
+                 temp3.append(action['value1'])
          for x in triple:
           if x in action.keys():
                res+=action[''+x]+' '
@@ -128,7 +128,7 @@ def generate_K(original_data,result_path):
     #original_data=json.load(open('Total_data.json','r',encoding='utf-8'))
     #print(len(original_data))
     #random.shuffle(original_data)
-    knowledge_list = json.load(open('../data/knowledge.json', 'r', encoding='utf-8'))
+    knowledge_list = json.load(open('../data/intermediate_file/knowledge.json', 'r', encoding='utf-8'))
 
     for dialogue in original_data:
         context=dialogue['information']
@@ -180,7 +180,7 @@ def generate_K(original_data,result_path):
                 if role == 'doctor':
                     system_history = '<|system|> {}'.format(contact_text+current_text)
                     system_response = '<|response|> {} <|endofresponse|>'.format(contact_text+current_text)
-                    system_action = '<|action|> {} <|endofaction|>'.format(contact_action+current_action[14:])
+                    system_action = '<|action|> {} <|endofaction|>'.format(contact_action+current_action)
                     result_path.write('<|endoftext|> ' + '<|context|> '+history +'<|endofcontext|>'+ user_current+user_intent+' <|knowledge|> '+context_knowledge+' <|endofknowledge|> '+system_action + system_response + '<|endoftext|>\n')
                     history += system_history
                 contact_text = ''
@@ -190,17 +190,19 @@ def generate_K(original_data,result_path):
     result_path.close()
 
 def main():
-    original_data = json.load(open('../data/Total_data_normalization.json', 'r', encoding='utf-8'))
-    train_path = open('train_knowledge_num5.txt', 'w', encoding='utf-8')
-    dev_path = open('dev_knowledge_num5.txt', 'w', encoding='utf-8')
-    test_path = open('test_knowledge_num5.txt', 'w', encoding='utf-8')
+    original_data = json.load(open('../data/Total_data.json', 'r', encoding='utf-8'))
+    #train_path = open('../data/train_human_annotation_600.txt', 'w', encoding='utf-8')
+    #dev_path = open('../data/dev_human_annotation.txt', 'w', encoding='utf-8')
+    test_path = open('../data/test_human_annotation_1507.txt', 'w', encoding='utf-8')
     random.seed(5)
     random.shuffle(original_data)
-    data_train = original_data[0:657]
-    data_dev = original_data[657:757]
-    data_test = original_data[757:1557]
-    generate_K(data_train, train_path)
-    generate_K(data_dev, dev_path)
+    #data_train = original_data[600:657]
+    print("test-1507")
+    #data_dev = original_data[657:757]
+    data_test = original_data[1507:1557]
+    #data_test = original_data[757:1557]
+    #generate_K(data_train, train_path)
+    #generate_K(data_dev, dev_path)
     generate_K(data_test, test_path)
 if __name__ == '__main__':
     main()

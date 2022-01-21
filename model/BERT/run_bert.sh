@@ -13,7 +13,5 @@ source activate medical_dialogue
 
 
 
-# Start the experiment7
-allennlp train $3.json --include-package $4 -s tmp/$1
-#CUDA_VISIBLE_DEVICES=3  allennlp evaluate 'tmp/bert_com_argue_pl/' '../data/0831/test_knowledge_num5.txt'  --batch-size 20 --cuda-device 0 --include-package pl --output-file 'tmp/bert_com_argue_pl/metrics.json'
+allennlp train $3.json --include-package $4 -s $1
 EOT
