@@ -12,6 +12,22 @@ The following three kinds datasets are fine tuned in order during training.
 2) train_natural_perturbation.txt,dev_natural_perturbation.txt: We use three methods of natural perturbation to enhance labeled date.
 3) train_human_annotation.txt,dev_human_annotation.txt,test_human_annotation.txt: We process the manually labeled data to get the dataset M^2-MedDialog-base.
 
+
+The origin labeled dialogues dataset is provided as json format:
+* dialogue_id
+* information (turn list)
+   * turn_id
+   * role (patient or doctor)
+   * sentence (text information)
+   * semantical_labels (semantical lables list)
+      * text (text)
+      * range (text start index and end index)
+      * intent/action (intent or action)
+      * slot 
+      * value1
+      * value2
+
+    
 # 3. Requirements
 Install the requirements within enviroment via pip:
 
