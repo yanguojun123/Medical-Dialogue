@@ -1,6 +1,7 @@
 from transformers import MT5ForConditionalGeneration, MT5Tokenizer
-from transformers import MBartForConditionalGeneration, MBartTokenizer
-from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
+from transformers import  MT5Tokenizer
+#from modeling_mt5_cl import MT5ForConditionalGeneration
+import modeling_mt5_cl
 import transformers
 import torch
 import os
@@ -35,10 +36,15 @@ from typing import Iterable, Tuple, Dict, Set, List
 import warnings
 import torch.nn as nn
 import torch.nn.functional as F
+import data_process
 warnings.filterwarnings("ignore")
 
 
 class ContrastiveLossELI5(nn.Module):
+    """
+    The contrastive loss from SIMCLR
+    """
+
     def __init__(self, batch_size, temperature=0.5, verbose=True):
         super().__init__()
         self.batch_size = batch_size
@@ -140,7 +146,7 @@ class NLTK_BLEU():
         #self.smoothfunc = SmoothingFunction().method7
         self.smoothfunc = smoothfunc
         #self.file_path = open('bleu_test/'+file_path,'w',encoding='utf-8')
-        # if all(ngram_weights = SmoothingFunction().method0
+        # if all(ngram_weights = SmoothingFunction().method0s
 
     def reset(self) -> None:
         """
@@ -348,7 +354,7 @@ def intent_evaluation(generatetion_list, groundtruth_list):
     metric['NLU']['intent_slot_micro'] = f1_score(y_gt_intent_slot, y_pred_intent_slot, average='micro')
     metric['NLU']['intent_slot_macro'] = f1_score(y_gt_intent_slot, y_pred_intent_slot, average='macro')
     metric['NLU']['intent_slot_weighted'] = f1_score(y_gt_intent_slot, y_pred_intent_slot, average='weighted')
-    metric['NLU']['bleu1'] = bleu1.get_metric(reset=False)
+    metric['NLU']['bleu1'] = bleu1_value.get_metric(reset=False)
     metric['NLU']['accuracy'] = true_action / total_action
     #metric['AP']['bleu4'] = bleu4.get_metric(reset=False)
     metric['NLU']['combined'] = (metric['NLU']['intent_slot_micro'] * 0.5) + (0.5 * metric['NLU']['bleu1'])
@@ -475,7 +481,7 @@ def action_evaluation(generatetion_list, groundtruth_list):
     metric['AP']['intent_slot_micro'] = f1_score(y_gt_intent_slot, y_pred_intent_slot, average='micro')
     metric['AP']['intent_slot_macro'] = f1_score(y_gt_intent_slot, y_pred_intent_slot, average='macro')
     metric['AP']['intent_slot_weighted'] = f1_score(y_gt_intent_slot, y_pred_intent_slot, average='weighted')
-    metric['AP']['bleu1'] = bleu1.get_metric(reset=False)
+    metric['AP']['bleu1'] = bleu1_value.get_metric(reset=False)
     metric['AP']['accuracy'] = true_action / total_action
     #metric['AP']['bleu4'] = bleu4.get_metric(reset=False)
     metric['AP']['combined'] = (metric['AP']['intent_slot_micro'] * 0.5) + (0.5 * metric['AP']['bleu1'])
@@ -527,19 +533,45 @@ def generate_evaluation(generation_list, groundtruth_list):
 
 class MyDataset(Dataset):
     """
-    Dataset class
+
     """
 
-    def __init__(self, data_list):
+    def __init__(self, data_list, task, input_type):
         self.data_list = data_list
-
+        self.task = task
+        self.input_type = input_type
     def __getitem__(self, index):
-        """
-        Get every item in the dataset
-        :param index:Subscript indicator
-        :return:Data sample
-        """
-        input_ids = self.data_list[index].strip()
+        inputs = ''
+        labels = ''
+        if self.task == 'nlu':
+            if self.input_type == 'without_context':
+                inputs = (self.data_list[index].split("<|intent|>")[0].split("<|endofcontext|>")[1]).strip()
+            else:
+                inputs = (self.data_list[index].split("<|intent|>")[0].split("<|endoftext|>")[1]).strip()
+
+            labels = (self.data_list[index].split("<|endofcurrentuser|>")[1].split("<|endofintent|>")[0]+ ' <|endofintent|>').strip()
+        elif self.task == 'pl':
+            if self.input_type == 'without_context':
+                inputs = (self.data_list[index].split("<|action|>")[0].split("<|endofcontext|>")[1]).strip()
+            elif self.input_type == 'without_knowledge':
+                inputs = (self.data_list[index].split("<|endofintent|>")[0].split("<|endoftext|>")[1]+ ' <|endofintent|>').strip()
+            else:
+                inputs = (self.data_list[index].split("<|action|>")[0].split("<|endoftext|>")[1]).strip()
+            labels = ('<|action|> ' + self.data_list[index].split("<|action|>")[1].split("<|response|>")[0]).strip()
+            # labels.append(batch[btc_idx].split("<|endofintent|>")[1].split("<|response|>")[0])
+        else:
+            if self.input_type == 'without_context':
+                inputs = (self.data_list[index].split("<|response|>")[0].split("<|endofcontext|>")[1]).strip()
+            elif self.input_type == 'without_knowledge':
+                inputs = (self.data_list[index].split("<|endofintent|>")[0].split("<|endoftext|>")[
+                              1] + ' <|endofintent|> <|action|>' + self.data_list[index].split('<|action|>')[1].split('<|response|>')[0]).strip()
+            else:
+                inputs = (self.data_list[index].split("<|response|>")[0].split("<|endoftext|>")[1]).strip()
+            # # inputs.append(batch[btc_idx].split('<|knowledge|>')[0].split('<|endoftext|>')[1] \
+            # #                       + batch[btc_idx].split('<|endofknowledge|>')[1].split('<|response|>')[0])
+            labels = (self.data_list[index].split("<|endofaction|>")[1].split("<|endoftext|>")[0]).strip()
+        input_ids = [inputs, labels]
+
         #input_ids = [int(token_id) for token_id in input_ids.split()]
         return input_ids
 
@@ -548,40 +580,46 @@ class MyDataset(Dataset):
 
 def setup_train_args():
     """
-    Set training parameters
-    :returns: parameter object
+    设置训练参数
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--device', default='0,1', type=str, required=False, help='Set which graphics cards to use')
-    parser.add_argument('--no_cuda', action='store_true', help='Training without GPU')
+    parser.add_argument('--device', default='0,1', type=str, required=False, help='设置使用哪些显卡')
+    parser.add_argument('--no_cuda', action='store_true', help='不使用GPU进行训练')
     parser.add_argument('--model_config', default='config/model_config_dialogue_small.json', type=str, required=False,
-                        help='Select model config file')
-    parser.add_argument('--vocab_path', default='vocabulary/vocab_small.txt', type=str, required=False, help='Select vocabulary file')
-    parser.add_argument('--log_path', default='data/training.log', type=str, required=False, help='Training log storage location')
-    parser.add_argument('--epochs', default=30, type=int, required=False, help='epoch numbers')
-    parser.add_argument('--batch_size', default=8, type=int, required=False, help='batch size')
-    parser.add_argument('--lr', default=1.5e-4, type=float, required=False, help='learning rate')
-    parser.add_argument('--warmup_steps', default=2000, type=int, required=False, help='warm up steps')
-    parser.add_argument('--log_step', default=1, type=int, required=False, help='How many steps to report loss')
-    parser.add_argument('--gradient_accumulation', default=1, type=int, required=False, help='Gradient accumulation numbers')
+                        help='选择模型参数')
+    parser.add_argument('--vocab_path', default='vocabulary/vocab_small.txt', type=str, required=False, help='选择词库')
+    parser.add_argument('--train_tokenized_path', default='data/train_tokenized.txt', type=str,
+                        required=False,help='将原始训练语料tokenize之后的数据的存放位置')
+    parser.add_argument('--log_path', default='data/training.log', type=str, required=False, help='训练日志存放位置')
+    parser.add_argument('--raw', action='store_true', help='是否对原始训练语料做tokenize。若尚未对原始训练语料进行tokenize，则指定该参数')
+    parser.add_argument('--epochs', default=10, type=int, required=False, help='训练的轮次')
+    parser.add_argument('--batch_size', default=8, type=int, required=False, help='训练batch size')
+    parser.add_argument('--lr', default=1.5e-4, type=float, required=False, help='学习率')
+    parser.add_argument('--warmup_steps', default=2000, type=int, required=False, help='warm up步数')
+    parser.add_argument('--log_step', default=1, type=int, required=False, help='多少步汇报一次loss')
+    parser.add_argument('--gradient_accumulation', default=1, type=int, required=False, help='梯度积累')
     parser.add_argument('--max_grad_norm', default=1.0, type=float, required=False)
     parser.add_argument('--dialogue_model_output_path', default='dialogue_model/', type=str, required=False,
-                        help='Dialog model output path')
-    parser.add_argument('--pretrained_model', default='', type=str, required=False, help='Pre training model folder to load')
-    parser.add_argument('--writer_dir', default='tensorboard_summary/', type=str, required=False, help='Tensorboard path file')
-    parser.add_argument('--seed', type=int, default=5, help='random seed')
-    parser.add_argument('--num_workers', type=int, default=1, help="The number of threads used by the dataloader to load data")
-    parser.add_argument('--eval_all_checkpoints', action='store_true', help='Evaluate on all models')
-    parser.add_argument('--train_path', default='data/train.txt', type=str, required=False, help='train dataset')
-    parser.add_argument('--val_path', default='data/val.txt', type=str, required=False, help='validation dataset')
-    parser.add_argument('--test_path', default='data/test.txt', type=str, required=False, help='test dataset')
-    parser.add_argument('--inference_result', default='output/pretrained_mt5.txt', type=str, required=False, help='generated result file')
+                        help='对话模型输出路径')
+    parser.add_argument('--pretrained_model', default='', type=str, required=False, help='预训练的GPT2模型的路径')
+    parser.add_argument('--writer_dir', default='tensorboard_summary/', type=str, required=False, help='Tensorboard路径')
+    parser.add_argument('--seed', type=int, default=5, help='设置种子用于生成随机数，以使得训练的结果是确定的')
+    parser.add_argument('--num_workers', type=int, default=1, help="dataloader加载数据时使用的线程数量")
+    parser.add_argument('--mmi_model_output_path', default='mmi_model', type=str, required=False, help='MMI模型保存路径')
+    parser.add_argument('--eval_all_checkpoints', action='store_true', help='在所有模型上评价')
+    parser.add_argument('--train_path', default='data/train.txt', type=str, required=False, help='原始训练语料')
+    parser.add_argument('--val_path', default='data/val.txt', type=str, required=False, help='原始验证语料')
+    parser.add_argument('--test_path', default='data/test.txt', type=str, required=False, help='原始测试语料')
+    parser.add_argument('--save_path', default='output/pretrained_mt5.txt', type=str, required=False, help='保存生成结果的路径')
     parser.add_argument("--local_rank", type=int, default=-1, help='distributed')
     parser.add_argument("--ft2", action='store_true', help='second fine tune')
-    parser.add_argument('--inference_type', default='groundtruth', type=str, required=True, help='generate end2end ')
+    parser.add_argument('--generate_type', default='end2end', type=str, required=True, help='generate end2end ')
     parser.add_argument('--model', default='train', type=str, required=False, help='train or test ')
     parser.add_argument('--tokenizer_path', default='tokenizer', type=str, required=False, help='tokenizer path')
     parser.add_argument('--task', default='pl', type=str, required=False, help='task: nlu,pl,nlg')
+    parser.add_argument('--evaluate_type', default='acc', type=str, required=False, help='task: nlu,pl,nlg')
+    parser.add_argument('--input_type', default='', type=str, required=False, help='ablation experiment type: WOC,WOK,all')
+    parser.add_argument('--cl', action='store_true', help='Add contrastive learning')
     return parser.parse_args()
 
 
@@ -626,40 +664,40 @@ def create_logger(args):
 
     return logger
 
-def collate_fn(batch):
-    """
-    Calculate the longest input of all samples in the batch, and align the length of other inputs to it
-    :param batch:Batch data fetched by dataloder each time
-    :return:Data in tensor format
-    """
-    global pad_id
-    input_ids = []
-    label_ids = []
-    btc_size = len(batch)
-
-    inputs = []
-    labels = []
-    for btc_idx in range(btc_size):
-        try:#Different tasks have different inputs and outputs
-            #generate intent:
-            inputs.append(batch[btc_idx].split("<|intent|>")[0].split("<|endofcontext|>")[1])
-            labels.append(batch[btc_idx].split("<|endofcurrentuser|>")[1].split("<|endoftext|>")[0])
-
-            # generate action
-            #inputs.append(batch[btc_idx].split("<|intent|>")[0].split("<|endoftext|>")[1])
-            #labels.append(batch[btc_idx].split("<|endofcurrentuser|>")[1].split("<|endoftext|>")[0])
-            #labels.append(batch[btc_idx].split("<|endofintent|>")[1].split("<|response|>")[0])
-
-            #generate response
-            #inputs.append(batch[btc_idx].split("<|response|>")[0].split("<|endoftext|>")[1])
-            #inputs.append(batch[btc_idx].split('<|knowledge|>')[0].split('<|endoftext|>')[1] \
-            #                       + batch[btc_idx].split('<|endofknowledge|>')[1].split('<|response|>')[0])
-            #labels.append(batch[btc_idx].split("<|endofaction|>")[1].split("<|endoftext|>")[0])
-        except IndexError:
-                if len(inputs)> len(labels):
-                    inputs.pop()
-                #print(len(inputs),len(labels))
-    return [inputs, labels]
+# def collate_fn(batch):
+#     """
+#     Calculate the longest input of all samples in the batch, and align the length of other inputs to it
+#     :param batch:Batch data fetched by dataloder each time
+#     :return:Data in tensor format
+#     """
+#     global pad_id
+#     input_ids = []
+#     label_ids = []
+#     btc_size = len(batch)
+#
+#     inputs = []
+#     labels = []
+#     for btc_idx in range(btc_size):
+#         try:#Different tasks have different inputs and outputs
+#             #generate intent:
+#             inputs.append(batch[btc_idx].split("<|intent|>")[0].split("<|endofcontext|>")[1])
+#             labels.append(batch[btc_idx].split("<|endofcurrentuser|>")[1].split("<|endoftext|>")[0])
+#
+#             # generate action
+#             #inputs.append(batch[btc_idx].split("<|intent|>")[0].split("<|endoftext|>")[1])
+#             #labels.append(batch[btc_idx].split("<|endofcurrentuser|>")[1].split("<|endoftext|>")[0])
+#             #labels.append(batch[btc_idx].split("<|endofintent|>")[1].split("<|response|>")[0])
+#
+#             #generate response
+#             #inputs.append(batch[btc_idx].split("<|response|>")[0].split("<|endoftext|>")[1])
+#             #inputs.append(batch[btc_idx].split('<|knowledge|>')[0].split('<|endoftext|>')[1] \
+#             #                       + batch[btc_idx].split('<|endofknowledge|>')[1].split('<|response|>')[0])
+#             #labels.append(batch[btc_idx].split("<|endofaction|>")[1].split("<|endoftext|>")[0])
+#         except IndexError:
+#                 if len(inputs)> len(labels):
+#                     inputs.pop()
+#                 #print(len(inputs),len(labels))
+#     return [inputs, labels]
 
 def train(model, device, train_list, multi_gpu, args, tokenizer, tb_writer):
     """
@@ -673,92 +711,88 @@ def train(model, device, train_list, multi_gpu, args, tokenizer, tb_writer):
     :param tb_writer:Tensorboard writer file object
     :return:NULL
     """
-    train_dataset = MyDataset(train_list)
-    #train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,collate_fn=collate_fn)
+    train_dataset = MyDataset(train_list, args.task, args.input_type)
+    # train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,collate_fn=collate_fn)
     model.train()
-    # Calculate the total number of steps for parameter optimization of all epochs steps
+    # 计算所有epoch进行参数优化的总步数total_steps
     total_steps = int(train_dataset.__len__() * args.epochs / args.batch_size / args.gradient_accumulation)
     logger.info('total training steps = {}'.format(total_steps))
 
-    # Set up the optimizer and use the warmup policy at the initial training
+    # 设置优化器，并且在初始训练时，使用warmup策略
     optimizer = transformers.AdamW(model.parameters(), lr=args.lr, correct_bias=True)
-    scheduler = transformers.get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,num_training_steps=total_steps)
+    scheduler = transformers.get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
+                                                             num_training_steps=total_steps)
 
     logger.info('starting training')
-    # Used to count the accumulated loss of each gradient
+    # 用于统计每次梯度累计的loss
     running_loss = 0
-    # Count the total number of steps trained
+    # 统计一共训练了多少个step
     overall_step = 0
-    # Number of times to record out of memory
+    # 记录 out of memory的次数
     oom_time = 0
-    # start trainning
+    # 开始训练
     for epoch in range(args.epochs):
         if torch.cuda.is_available():
             sampler = DistributedSampler(train_dataset)
             sampler.set_epoch(epoch)
             train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size,
-                                      num_workers=args.num_workers,
-                                      collate_fn=collate_fn, sampler=sampler)
+                                          num_workers=args.num_workers,
+                                          sampler=sampler)
         else:
             train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
-                                          num_workers=args.num_workers,
-                                          collate_fn=collate_fn)
+                                          num_workers=args.num_workers
+                                          )
         epoch_start_time = datetime.now()
         for batch_idx, input_ids in enumerate(train_dataloader):
-                #print(inputs)
-            #if len(input_ids[0]) and len(input_ids[1]) >0:
-                inputs = tokenizer(input_ids[0], return_tensors="pt",padding=True, max_length=800, truncation=True).to(device)
-                #input_ids = inputs['inputs']['input_ids'].to(device)
-                #attention_mask = inputs['inputs']['attention_mask'].to(device)
-                with tokenizer.as_target_tokenizer():
-                    #labels_input_ids = inputs['labels']['input_ids'].to(device)
-                    if input_ids[1] is not None:
-                        labels = tokenizer(input_ids[1], return_tensors="pt", padding=True).to(device)
-                # Solve the CUDA out of memory problem caused by insufficient video memory during operation
-                try:
-                    outputs = model(**inputs, labels=labels["input_ids"])
-                    loss = outputs.loss
-                    '''outputs = model(**inputs, decoder_input_ids=labels['input_ids'])
-                    lm_logits = outputs[0]
-                    shift_logits = lm_logits[..., :-1, :].contiguous()
-                    shift_labels = labels['input_ids'][..., 1:].contiguous()
-                    #print("logits:{}, labels:{}".format(shift_logits.size(), shift_labels.size()))
-                    loss_fct = CrossEntropyLoss()
-                    loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))'''
-                    #print("loss:", loss)
-                    if multi_gpu:
-                        loss = loss.mean()
-                    if args.gradient_accumulation > 1:
-                        loss = loss.mean() / args.gradient_accumulation
-                    #loss.backward(loss.clone().detach())
-                    loss.backward()
-                    # Gradient clipping solves the problem of gradient disappearance or explosion, that is, setting the threshold
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-                    # After the gradient accumulation of a certain step, update the parameters
-                    if (batch_idx + 1) % args.gradient_accumulation == 0:
-                        running_loss += loss.mean().item()
-                        # Update parameters
-                        optimizer.step()
-                        # Clear gradient information
-                        optimizer.zero_grad()
-                        # warm up
-                        scheduler.step()
-                        overall_step += 1
-                        # Update log and tnesorboardx information
-                        if (overall_step + 1) % args.log_step == 0 and args.local_rank == 0:
-                            logger.info(
-                                "batch {} of epoch {}, loss {}".format(
-                                    batch_idx + 1, epoch + 1, loss.mean()))
-                            tb_writer.add_scalar('loss', loss.mean().item(), overall_step)
-                except RuntimeError as exception:
-                    if "out of memory" in str(exception):
-                        oom_time += 1
-                        logger.info("WARNING: ran out of memory,times: {}".format(oom_time))
-                        if hasattr(torch.cuda, 'empty_cache'):
-                            torch.cuda.empty_cache()
-                    else:
-                        logger.info(str(exception))
-                        raise exception
+            #print(input_ids)
+            # if len(input_ids[0]) and len(input_ids[1]) >0:
+            inputs = tokenizer(input_ids[0], return_tensors="pt", padding=True, max_length=800, truncation=True).to(
+                device)
+            # print("input_ids", inputs['input_ids'].size())
+            # input_ids = inputs['inputs']['input_ids'].to(device)
+            # attention_mask = inputs['inputs']['attention_mask'].to(device)
+            with tokenizer.as_target_tokenizer():
+                # labels_input_ids = inputs['labels']['input_ids'].to(device)
+                if input_ids[1] is not None:
+                    labels = tokenizer(input_ids[1], return_tensors="pt", padding=True, truncation=True).to(device)
+            # 解决在运行过程中，由于显存不足产生的cuda out of memory的问题
+            try:
+                outputs = model(**inputs, labels=labels["input_ids"])
+                loss = outputs.loss
+                # print("loss:", loss)
+                if multi_gpu:
+                    loss = loss.mean()
+                if args.gradient_accumulation > 1:
+                    loss = loss.mean() / args.gradient_accumulation
+                # loss.backward(loss.clone().detach())
+                loss.backward()
+                # 梯度裁剪解决的是梯度消失或爆炸的问题，即设定阈值
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+                # 进行一定step的梯度累计之后，更新参数
+                if (batch_idx + 1) % args.gradient_accumulation == 0:
+                    running_loss += loss.mean().item()
+                    # 更新参数
+                    optimizer.step()
+                    # 清空梯度信息
+                    optimizer.zero_grad()
+                    # 进行warm up
+                    scheduler.step()
+                    overall_step += 1
+                    # 更新日志与tnesorboardX信息
+                    if (overall_step + 1) % args.log_step == 0 and args.local_rank == 0:
+                        logger.info(
+                            "batch {} of epoch {}, loss {}".format(
+                                batch_idx + 1, epoch + 1, loss.mean()))
+                        tb_writer.add_scalar('loss', running_loss, overall_step)
+            except RuntimeError as exception:
+                if "out of memory" in str(exception):
+                    oom_time += 1
+                    logger.info("WARNING: ran out of memory,times: {}".format(oom_time))
+                    if hasattr(torch.cuda, 'empty_cache'):
+                        torch.cuda.empty_cache()
+                else:
+                    logger.info(str(exception))
+                    raise exception
         if args.local_rank == 0:
             logger.info('saving model for epoch {}'.format(epoch + 1))
             model_path = join(args.dialogue_model_output_path, 'model_epoch{}'.format(epoch + 1))
@@ -773,35 +807,35 @@ def train(model, device, train_list, multi_gpu, args, tokenizer, tb_writer):
     logger.info('training finished')
 
 
-'''def evaluate(model, device, dev_list, multi_gpu, args, tokenizer, tb_writer, overstep):
+def evaluate_loss(model, device, dev_list, multi_gpu, args, tokenizer, tb_writer, overstep):
     """
     evaluate all model
     :param model:trained model
     :param device:CPU or GPU
     :param dev_list:validation set
-    :param multi_gpu:Is it multi GPU training
     :param args:Experimental parameters
     :param tokenizer:Tokenizer object of pre training model
-    :param tb_writer:Tensorboard writer file object
-    :param overall_step:Total training steps
-    :return:Total loss of the current validation set
+    :param tb_writer: Tensorboard writer
+    :param overstep: Steps of all validation
+    :return:Result the current validation set
     """
     logger.info("start evaluating model")
     model.eval()
     logger.info('starting evaluating')
+    # 记录tensorboardX
     loss_all = 0
     accuracy_epoch = 0
     batch_step =0
     # tb_writer = SummaryWriter(log_dir=args.writer_dir)
-    test_dataset = MyDataset(test_list)
-    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,collate_fn=collate_fn)
+    test_dataset = MyDataset(dev_list, args.task, args.input_type)
+    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     with torch.no_grad():
 
         for batch_idx, input_ids in enumerate(test_dataloader):
             #special_index = (input_ids[:, 0:6] - np.ones((input_ids.size(0), 6), dtype=int)).to(device)
             #input_ids = input_ids[:, 6:].to(device)
             # input_ids.to(device)
-            if len(input_ids[0]) and len(input_ids[1]) >0:
+            if len(input_ids[0]) and len(input_ids[1]) > 0:
                 inputs = tokenizer(input_ids[0], return_tensors="pt", padding=True, max_length=800, truncation=True)
                 inputs = inputs.to(device)
 
@@ -831,9 +865,9 @@ def train(model, device, train_list, multi_gpu, args, tokenizer, tb_writer):
         logger.info("finishing evaluating. loss {}".format(
             loss_all / batch_step))
 
-    return loss_all / batch_step'''
+    return loss_all / batch_step
 
-def evaluate(model, device, test_list, args, tokenizer):
+def evaluate_acc(model, device, dev_list, args, tokenizer):
     """
     evaluate all model
     :param model:trained model
@@ -845,20 +879,21 @@ def evaluate(model, device, test_list, args, tokenizer):
     """
     model.eval()
     logger.info('starting evaluating')
-    test_dataset = MyDataset(test_list)
+    # 记录tensorboardX
+    test_dataset = MyDataset(dev_list, args.task, args.input_type)
     generation = []
     labels = []
     nlg_labels = []
     result = 0
-    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,collate_fn=collate_fn)
+    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     with torch.no_grad():
 
         for batch_idx, input_ids in enumerate(test_dataloader):
             labels += input_ids[1]
-            #special_index = (input_ids[:, 0:6] - np.ones((input_ids.size(0), 6), dtype=int)).to(device)
-            #input_ids = input_ids[:, 6:].to(device)
+            # special_index = (input_ids[:, 0:6] - np.ones((input_ids.size(0), 6), dtype=int)).to(device)
+            # input_ids = input_ids[:, 6:].to(device)
             # input_ids.to(device)
-            if len(input_ids[0])>0 and len(input_ids[1]) >0:
+            if len(input_ids[0]) > 0 and len(input_ids[1]) > 0:
                 inputs = tokenizer(input_ids[0], return_tensors="pt", padding=True, max_length=800, truncation=True)
                 inputs = inputs.to(device)
 
@@ -866,28 +901,40 @@ def evaluate(model, device, test_list, args, tokenizer):
                 for index in range(len(outputs)):
                     if args.task == 'nlg':
                         nlg_labels.append(input_ids[1][index].split('<|response|>')[1].split('<|endofresponse|>')[0])
-                    #print(tokenizer.decode(outputs[index]))
+                    # print(tokenizer.decode(outputs[index]))
                     temp = re.sub('</s>', '', re.sub('<pad>', '', tokenizer.decode(outputs[index])))
-                    if '<|action|>' in temp and '<|endofaction|>' in temp:
-                        temp = temp.split('<|action|>')[1].split('<|endofaction|>')[0]
-                        #print("generation:", temp)
-                        generation.append(temp)
-                    if '<|intent|>' in temp and '<|endofintent|>' in temp:
-                        generation.append(temp)
-                    if '<|response|>' in temp and '<|endofresponse|>' in temp:
-                        temp = temp.split('<|response|>')[1].split('<|endofresponse|>')[0]
-                        #print("generation:", temp)
-                        generation.append(temp)
+                    print("temp:", temp)
+                    if args.task == 'nlu':
+                        if '<|intent|>' in temp and '<|endofintent|>' in temp:
+                            temp = temp.split('<|intent|>')[1].split('<|endofintent|>')[0]
+                            generation.append(temp)
+                        else:
+                            generation.append(' ')
+
+                    elif args.task == 'pl':
+                        if '<|action|>' in temp and '<|endofaction|>' in temp:
+                            temp = temp.split('<|action|>')[1].split('<|endofaction|>')[0]
+                            # print("generation:", temp)
+                            generation.append(temp)
+                        else:
+                            generation.append(' ')
+
                     else:
-                        generation.append(' ')
-                #print("generation:", generation)
-                #print("nlg_labels:", nlg_labels)
-        if args.task == 'pl':
-            result = action_evaluation(generation, labels)
-        elif args.task == 'nlg':
-            result = generate_evaluation(generation, nlg_labels)
-        else:
+                        if '<|response|>' in temp and '<|endofresponse|>' in temp:
+                            temp = temp.split('<|response|>')[1].split('<|endofresponse|>')[0]
+                            # print("generation:", temp)
+                            generation.append(temp)
+                        else:
+                            generation.append(' ')
+                # print("generation:", generation)
+                # print("nlg_labels:", nlg_labels)
+
+        if args.task == 'nlu':
             result = intent_evaluation(generation, labels)
+        elif args.task == 'pl':
+            result = action_evaluation(generation, labels)
+        else:
+            result = generate_evaluation(generation, nlg_labels)
         logger.info("finishing evaluating. result {}".format(result))
     return result
 
@@ -902,8 +949,8 @@ def generate(model,tokenizer,test_list,args,device):
     :return:NULL
     """
     logger.info('starting generating')
-    save_path = open(args.inference_result, 'w', encoding='utf-8')
-    #test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, collate_fn=collate_fn1)
+    save_path = open(args.save_path, 'w', encoding='utf-8')
+    # test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, collate_fn=collate_fn1)
     joint_acc = 0
     count = 0
     model.eval()
@@ -911,7 +958,7 @@ def generate(model,tokenizer,test_list,args,device):
     dialogue_dict = {}
     for dialogue in test_list:
 
-        dialogue_dict[''+str(count)] = {
+        dialogue_dict['' + str(count)] = {
             'target_intent': [],
             'generated_intent': [],
             'target_action': [],
@@ -920,86 +967,106 @@ def generate(model,tokenizer,test_list,args,device):
             'generated_response': []
         }
 
-
         # process dialogue
         dialogue_inputs = []
         dialogue_groundtruth = []
         decoder_inputs = []
         outputs = []
         for turns in dialogue.split('\n'):
-            #generate intent
-            dialogue_inputs.append(turns.split("<|intent|>")[0].split("<|endofcontext|>")[1])
-            dialogue_groundtruth.append(turns.split("<|endofcurrentuser|>")[1].split("<|endoftext|>")[0])
-
-            #generate response
-            #dialogue_inputs.append(turns.split('<|knowledge|>')[0].split('<|endoftext|>')[1] \
-            #                      +turns.split('<|endofknowledge|>')[1].split('<|response|>')[0])
-            #dialogue_inputs.append(turns.split('<|response|>')[0].split('<|endoftext|>')[1])
-            #dialogue_groundtruth.append(turns.split('<|endofaction|>')[1].split('<|endoftext|>')[0])
+            if args.task == 'nlu':
+                # generate intent
+                ### all
+                if args.input_type == 'without_context':
+                    dialogue_inputs.append(turns.split("<|intent|>")[0].split("<|endofcontext|>")[1])
+                else:
+                    dialogue_inputs.append(turns.split("<|intent|>")[0].split("<|endoftext|>")[1])
+                dialogue_groundtruth.append(turns.split("<|endofcurrentuser|>")[1].split("<|endoftext|>")[0])
 
             # generate action
-            #dialogue_inputs.append(turns.split('<|intent|>')[0].split('<|endoftext|>')[1])
-            decoder_inputs.append(turns.split('<|endofcurrentuser|>')[1].split('<|action|>')[0])
-            #dialogue_groundtruth.append(turns.split('<|endofcurrentuser|>')[1].split('<|endoftext|>')[0])
-            #dialogue_groundtruth.append(turns.split('<|endofintent|>')[1].split('<|endoftext|>')[0])
+            if args.task == 'pl':
+                if args.input_type == 'without_context':
+                    dialogue_inputs.append(turns.split("<|action|>")[0].split("<|endofcontext|>")[1])
+                elif args.input_type == 'without_knowledge':
+                    dialogue_inputs.append(turns.split("<|endofintent|>")[0].split("<|endoftext|>")[
+                                               1] + ' <|endofintent|>')
+                else:
+                    dialogue_inputs.append(turns.split('<|action|>')[0].split('<|endoftext|>')[1])
+                # decoder_inputs.append(turns.split('<|endofcurrentuser|>')[1].split('<|action|>')[0])
+                dialogue_groundtruth.append('<|action|> ' + turns.split('<|action|>')[1].split('<|response|>')[0])
+                # dialogue_groundtruth.append(turns.split('<|endofintent|>')[1].split('<|endoftext|>')[0])
+
+            if args.task == 'nlg':
+                if args.input_type == 'without_context':
+                    dialogue_inputs.append(turns.split("<|response|>")[0].split("<|endofcontext|>")[1])
+                elif args.input_type == 'without_knowledge':
+                    dialogue_inputs.append(turns.split("<|endofintent|>")[0].split("<|endoftext|>")[
+                                               1] + ' <|endofintent|> <|action|>' +
+                                           turns.split('<|action|>')[1].split('<|response|>')[0])
+                else:
+                    # generate response
+                    # dialogue_inputs.append(turns.split('<|knowledge|>')[0].split('<|endoftext|>')[1] \
+                    #                      +turns.split('<|endofknowledge|>')[1].split('<|response|>')[0])
+                    dialogue_inputs.append(turns.split('<|response|>')[0].split('<|endoftext|>')[1])
+                dialogue_groundtruth.append(turns.split('<|endofaction|>')[1].split('<|endoftext|>')[0])
 
         # model generate
 
-        inputs = tokenizer(dialogue_inputs, return_tensors="pt", padding=True).to(device)
-        decoder_inputs = tokenizer(decoder_inputs, return_tensors="pt", padding=True).to(device)
-        #print(inputs)
-        #outputs = model.generate(inputs["input_ids"], max_length=100, forced_bos_token_id=tokenizer.encode('<en>')[0])
-        if args.inference_type == 'groundtruth':
-                #for index in range(len(dialogue_inputs)):
-                #inputs = tokenizer(dialogue_inputs, return_tensors="pt").to(device)
-                #print(decoder_inputs[index])
-                #decoder_input_ids = tokenizer(decoder_inputs[index], return_tensors="pt").to(device)
-                outputs= model.generate(inputs["input_ids"], decoder_input_ids=decoder_inputs,max_length=100)
-                #print(outputs)
+        inputs = tokenizer(dialogue_inputs, return_tensors="pt", padding=True, max_length=100).to(device)
+        # decoder_inputs = tokenizer(decoder_inputs, return_tensors="pt", padding=True, max_length=100).to(device)
+        print(inputs)
+        # outputs = model.generate(inputs["input_ids"], max_length=100, forced_bos_token_id=tokenizer.encode('<en>')[0])
+        if args.generate_type == 'end2end':
+            # for index in range(len(dialogue_inputs)):
+            # inputs = tokenizer(dialogue_inputs, return_tensors="pt").to(device)
+            # print(decoder_inputs[index])
+            # decoder_input_ids = tokenizer(decoder_inputs[index], return_tensors="pt").to(device)
+            outputs = model.generate(inputs["input_ids"], max_length=200)
+            # print(outputs)
         else:
             outputs = []
             break_tokens = tokenizer.encode('</s>')
 
-            #print('count:',count)
+            # print('count:',count)
             ty = 'groundtruth'
             if ty == 'predicted':
                 for turns in dialogue.split('\n'):
                     get_intent = False
                     get_action = False
-                    inputs = tokenizer(turns.split('<|intent|>')[0].split('<|endofcontext|>')[1], return_tensors="pt").to(device)
+                    inputs = tokenizer(turns.split('<|intent|>')[0].split('<|endofcontext|>')[1],
+                                       return_tensors="pt").to(device)
                     knowledge = turns.split('<|endofintent|>')[1].split('<|action|>')[0]
-                    #print(knowledge)
+                    # print(knowledge)
 
                     indexed_tokens = tokenizer.encode('<|intent|>')[:-1]
                     tokens_tensor = torch.tensor(indexed_tokens).to(device).unsqueeze(0)
-                    #print(inputs, inputs['input_ids'].size(), tokens_tensor.size())
+                    # print(inputs, inputs['input_ids'].size(), tokens_tensor.size())
                     predicted_index = 0
                     predicted_text = ''
                     try:
                         while predicted_index != break_tokens[0]:
                             predictions = model(**inputs, decoder_input_ids=tokens_tensor)[0]
                             predicted_index = torch.argmax(predictions[0, -1, :]).item()
-                            #print("pre")
-                            #temp = re.sub('[^\u4e00-\u9fa5]','',tokenizer.decode(predicted_index))
+                            # print("pre")
+                            # temp = re.sub('[^\u4e00-\u9fa5]','',tokenizer.decode(predicted_index))
                             temp = re.sub('[a-zA-Z<>|]', '', tokenizer.decode(predicted_index))
-                            #print("temp:", temp)
+                            # print("temp:", temp)
                             if temp != '':
                                 if not get_intent and temp in predicted_text:
                                     indexed_tokens += [tokenizer.encode('<|endofintent|>')[0]]
-                                    #get_intent = True
+                                    # get_intent = True
                                 elif get_intent and not get_action and temp in predicted_text.split('<|action|>')[1]:
                                     indexed_tokens += [tokenizer.encode('<|endofaction|>')[0]]
-                                    #get_action = True
+                                    # get_action = True
                                 elif get_intent and get_action and temp in predicted_text.split('<|response|>')[1]:
                                     indexed_tokens += [tokenizer.encode('<|endofresponse|>')[0]]
                                 else:
                                     indexed_tokens += [predicted_index]
-                            #print(predicted_index, tokenizer.decode(predicted_index))
+                            # print(predicted_index, tokenizer.decode(predicted_index))
                             else:
                                 indexed_tokens += [predicted_index]
-                            #print("indexed_tokens:", indexed_tokens)
+                            # print("indexed_tokens:", indexed_tokens)
                             predicted_text = tokenizer.decode(indexed_tokens)
-                            #print('predicted_text:',predicted_text)
+                            # print('predicted_text:',predicted_text)
                             '''temp = longestDupSubstring(re.sub('[^\u4e00-\u9fa5]','',predicted_text))
                             print('temp:',temp)'''
                             '''if temp != '':
@@ -1009,17 +1076,17 @@ def generate(model,tokenizer,test_list,args,device):
                                     indexed_tokens += [tokenizer.encode('<|endofaction|>')[0]]
                                 elif '<|endofresponse|>' not in predicted_text:
                                     indexed_tokens += [tokenizer.encode('<|endofresponse|>')[0]]'''
-                            #print("predicted_text:", predicted_text)
+                            # print("predicted_text:", predicted_text)
                             if '<|endofintent|>' in predicted_text and not get_intent:
-                                #print("predicted_text", predicted_text)
+                                # print("predicted_text", predicted_text)
                                 get_intent = True
                                 # generated_intents.append('<|continue|>'.join(predicted_text.split('<|intent|>')[1].split('<|continue|>')[0:-2]))
-                                indexed_tokens = tokenizer.encode(predicted_text +knowledge + '<|action|>')[:-1]
+                                indexed_tokens = tokenizer.encode(predicted_text + knowledge + '<|action|>')[:-1]
 
                             if '<|endofaction|>' in predicted_text and not get_action:
                                 get_action = True
-                                #generated_actions.append(
-                                 #   '<|continue|>'.join(predicted_text.split('<|action|>')[1].split('<|continue|>')[:-2]))
+                                # generated_actions.append(
+                                #   '<|continue|>'.join(predicted_text.split('<|action|>')[1].split('<|continue|>')[:-2]))
                                 '''indexed_tokens = tokenizer.encode(
                                     predicted_text.split('<|action|>')[0] + '<|action|> {} <|endofaction|> <|response|>'.format(
                                         '<|continue|>'.join(predicted_text.split('<|action|>')[1].split('<|continue|>')[:-2])))[1:-1]'''
@@ -1027,16 +1094,16 @@ def generate(model,tokenizer,test_list,args,device):
 
                             predicted_text = tokenizer.decode(indexed_tokens)
                             tokens_tensor = torch.tensor([indexed_tokens]).to('cuda')
-                            #print('tokens_tensor:', tokens_tensor.size())
+                            # print('tokens_tensor:', tokens_tensor.size())
                             if tokenizer.decode(indexed_tokens).endswith('<|endofresponse|>'):
                                 break
-                            if tokens_tensor.size(-1)>200:
-                                indexed_tokens = tokenizer.encode(predicted_text+ ' <|endofresponse|>')
+                            if tokens_tensor.size(-1) > 200:
+                                indexed_tokens = tokenizer.encode(predicted_text + ' <|endofresponse|>')
                                 break
                     except RuntimeError:
                         pass
                     predicted_text = tokenizer.decode(indexed_tokens)
-                    #print(predicted_text)
+                    # print(predicted_text)
                     outputs.append(indexed_tokens)
 
             else:
@@ -1044,10 +1111,11 @@ def generate(model,tokenizer,test_list,args,device):
                     get_action = False
                     inputs = tokenizer(turns.split('<|intent|>')[0].split('<|endoftext|>')[1], return_tensors="pt").to(
                         device)
-                    #knowledge = turns.split('<|endofintent|>')[1].split('<|action|>')[0]
+                    # knowledge = turns.split('<|endofintent|>')[1].split('<|action|>')[0]
                     # print(knowledge)
 
-                    indexed_tokens = tokenizer.encode(turns.split('<|endofcurrentuser|>')[1].split('<|action|>')[0]+' <|action|>')[:-1]
+                    indexed_tokens = tokenizer.encode(
+                        turns.split('<|endofcurrentuser|>')[1].split('<|action|>')[0] + ' <|action|>')[:-1]
                     response = turns.split('<|endofcurrentuser|>')[1].split('<|response|>')[0]
                     indexed_actions = ''
                     indexed_response = ''
@@ -1060,7 +1128,7 @@ def generate(model,tokenizer,test_list,args,device):
                         while predicted_index != break_tokens[0]:
                             predictions = model(**inputs, decoder_input_ids=tokens_tensor)[0]
                             predicted_index = torch.argmax(predictions[0, -1, :]).item()
-                            #print('predicted_text:',predicted_text)
+                            # print('predicted_text:',predicted_text)
                             # print("pre")
                             # temp = re.sub('[^\u4e00-\u9fa5]','',tokenizer.decode(predicted_index))
                             temp = re.sub('[a-zA-Z<>|]', '', tokenizer.decode(predicted_index))
@@ -1069,7 +1137,7 @@ def generate(model,tokenizer,test_list,args,device):
                                 if not get_action and temp in predicted_text.split('<|action|>')[1]:
                                     indexed_tokens += [tokenizer.encode('<|endofaction|>')[0]]
                                     # get_action = True
-                                elif  get_action and temp in predicted_text.split('<|response|>')[1]:
+                                elif get_action and temp in predicted_text.split('<|response|>')[1]:
                                     indexed_tokens += [tokenizer.encode('<|endofresponse|>')[0]]
                                 else:
                                     indexed_tokens += [predicted_index]
@@ -1091,38 +1159,48 @@ def generate(model,tokenizer,test_list,args,device):
                                 indexed_response = tokenizer.encode(predicted_text.split('<|endofknowledge|>')[1])
                                 break
                             if tokens_tensor.size(-1) > 300:
-                                indexed_response = tokenizer.encode(predicted_text.split('<|endofknowledge|>')[1] + ' <|endofresponse|>')
+                                indexed_response = tokenizer.encode(
+                                    predicted_text.split('<|endofknowledge|>')[1] + ' <|endofresponse|>')
                                 break
                     except RuntimeError:
                         pass
-                    #predicted_text = tokenizer.decode(indexed_tokens)
+                    # predicted_text = tokenizer.decode(indexed_tokens)
                     # print(predicted_text)
-                    if len(indexed_actions)==0:
+                    if len(indexed_actions) == 0:
                         indexed_actions = tokenizer.encode('<|action|> <|endofaction|>')[:-1]
-                    outputs.append(indexed_actions+indexed_response)
+                    outputs.append(indexed_actions + indexed_response)
         # tokenizer decode and
         for index in range(len(outputs)):
-            #print(len(outputs))
+            # print(len(outputs))
             print(tokenizer.decode(outputs[index]))
             generation = re.sub('</s>', '', re.sub('<pad>', '', tokenizer.decode(outputs[index])))
-            #print("generation", generation)
-            #generation = tokenizer.decode(outputs[index]).split('</s>')[0].split('<pad>')[1]
-            #print("groundtruth:", dialogue_groundtruth[index])
-            #dialogue_dict[''+str(count)]['target_intent'].append(dialogue_groundtruth[index].split('<|intent|>')[1].split('<|endofintent|>')[0])
-            dialogue_dict[''+str(count)]['target_action'].append(dialogue_groundtruth[index].split('<|action|>')[1].split('<|endofaction|>')[0])
-            dialogue_dict[''+str(count)]['target_response'].append(dialogue_groundtruth[index].split('<|response|>')[1].split('<|endofresponse|>')[0])
+            # print("generation", generation)
+            # generation = tokenizer.decode(outputs[index]).split('</s>')[0].split('<pad>')[1]
+            # print("groundtruth:", dialogue_groundtruth[index])
+            if args.task == 'nlu':
+                dialogue_dict['' + str(count)]['target_intent'].append(
+                    dialogue_groundtruth[index].split('<|intent|>')[1].split('<|endofintent|>')[0])
+            elif args.task == 'pl':
+                dialogue_dict['' + str(count)]['target_action'].append(
+                    dialogue_groundtruth[index].split('<|action|>')[1].split('<|endofaction|>')[0])
+            else:
+                dialogue_dict['' + str(count)]['target_response'].append(
+                    dialogue_groundtruth[index].split('<|response|>')[1].split('<|endofresponse|>')[0])
             if '<|intent|>' in generation and '<|endofintent|>' in generation:
-                dialogue_dict[''+str(count)]['generated_intent'].append(generation.split('<|intent|>')[1].split('<|endofintent|>')[0])
+                dialogue_dict['' + str(count)]['generated_intent'].append(
+                    generation.split('<|intent|>')[1].split('<|endofintent|>')[0])
             else:
-                dialogue_dict[''+str(count)]['generated_intent'].append(' ')
+                dialogue_dict['' + str(count)]['generated_intent'].append(' ')
             if '<|action|>' in generation and '<|endofaction|>' in generation:
-                dialogue_dict[''+str(count)]['generated_action'].append(generation.split('<|action|>')[1].split('<|endofaction|>')[0])
+                dialogue_dict['' + str(count)]['generated_action'].append(
+                    generation.split('<|action|>')[1].split('<|endofaction|>')[0])
             else:
-                dialogue_dict[''+str(count)]['generated_action'].append(' ')
+                dialogue_dict['' + str(count)]['generated_action'].append(' ')
             if '<|response|>' in generation and '<|endofresponse|>' in generation:
-                dialogue_dict[''+str(count)]['generated_response'].append(generation.split('<|response|>')[1].split('<|endofresponse|>')[0])
+                dialogue_dict['' + str(count)]['generated_response'].append(
+                    generation.split('<|response|>')[1].split('<|endofresponse|>')[0])
             else:
-                dialogue_dict[''+str(count)]['generated_response'].append(' ')
+                dialogue_dict['' + str(count)]['generated_response'].append(' ')
         print("count:", count)
         count += 1
     json.dump(dialogue_dict, save_path, indent=1, ensure_ascii=False)
@@ -1149,14 +1227,13 @@ def init(args):
     return tb_writer, multi_gpu
 def main():
     """
-   Main function
-   :return: NULL
-   """
+    Main function
+    """
     args = setup_train_args()
 
     tb_writer = ''
     multi_gpu = ''
-    # Log output to both file and console
+    # 日志同时输出到文件和console
     global logger
     logger = create_logger(args)
 
@@ -1171,18 +1248,25 @@ def main():
     torch.distributed.init_process_group(backend="nccl")
     logger.info('using device:{}'.format(device))
     logger.info(args)
-
-
+    # 为CPU设置种子用于生成随机数，以使得结果是确定的
+    # 为当前GPU设置随机种子；如果使用多个GPU，应该使用torch.cuda.manual_seed_all()为所有的GPU设置种子。
+    # 当得到比较好的结果时我们通常希望这个结果是可以复现
     if args.seed:
         set_random_seed(args)
 
+    # 设置使用哪些显卡进行训练
+    #os.environ["CUDA_VISIBLE_DEVICES"] = args.device
 
+    # tokenizer的字典大小
     if args.pretrained_model:
-        model = MT5ForConditionalGeneration.from_pretrained(args.pretrained_model)
+        if args.cl:
+            model = modeling_mt5_cl.MT5ForConditionalGeneration.from_pretrained(args.pretrained_model)
+        else:
+            model = MT5ForConditionalGeneration.from_pretrained(args.pretrained_model)
     else:
-        model = MT5ForConditionalGeneration.from_pretrained("../GPT2-chitchat/model/mt5/")
-        model =
-    tokenizer = MT5Tokenizer.from_pretrained("../GPT2-chitchat/model/mt5/")
+        # google hunggiface link : google/mt5-small, if can't load , you can save your device
+        model = MT5ForConditionalGeneration.from_pretrained('../../GPT2-chitchat/model/mt5/')
+    tokenizer = MT5Tokenizer.from_pretrained("../../GPT2-chitchat/model/mt5/")
     tokenizer.add_special_tokens({'additional_special_tokens': ['<|user|>', '<|system|>','<|intent|>','<|endofintent|>',
                                                                 '<|action|>','<|endofaction|>','<|response|>','<|endofresponse|>'
                                                                 ,'<|knowledge|>','<|endofknowledge|>','<|continue|>','<|k|>']})
@@ -1195,32 +1279,47 @@ def main():
 
     if args.local_rank == 0:
 
-        # Record the number of model parameters
+        # 记录模型参数数量
         num_parameters = 0
         parameters = model.parameters()
         for parameter in parameters:
             num_parameters += parameter.numel()
         logger.info('number of model parameters: {}'.format(num_parameters))
+        print('number of model parameters:', num_parameters)
 
+        ''' if args.raw:
+            preprocess_raw_data(args.train_path, args.tokenizer_path, tokenizer, 800)'''
+        # 对原始数据进行预处理,将原始语料转换成对应的token_id
         tb_writer, multi_gpu = init(args)
 
     model = DDP(model, device_ids=[args.local_rank], output_device=args.local_rank)
-    # load model
+    # 加载数据
     if args.ft2:
         logger.info("loading traing data")
         # consider train_path list
-        #train_list = torch.load(args.tokenizer_path)
+        # train_list = torch.load(args.tokenizer_path)
+        data_argue = json.load(open('../data/argumentation_map.json', 'r', encoding='utf-8'))
         train_temp = open(args.train_path, "r", encoding='utf-8').read().split('\n\n')[0:-1]
         train_list = []
         for data in train_temp:
             train_list += data.split('\n')
+
+        if args.cl:
+            train_list = data_process.get_data(train_list, data_argue, args)
+        # print(data_new_train)
         logger.info("loading val data")
         val_temp = open(args.val_path, "r", encoding='utf-8').read().split('\n\n')
         val_list = []
         for data in val_temp[0:-1]:
             val_list += data.split('\n')
+
         logger.info("loading testing data")
-        test_list = open(args.test_path, "r", encoding='utf-8').read().split('\n\n')[0:-1]
+        test1_temp = open(args.test_path, "r", encoding='utf-8').read().split('\n\n')
+        test_list1 = []
+        for data in test1_temp[0:-1]:
+            test_list1 += data.split('\n')
+
+        test_list2 = open(args.test_path, "r", encoding='utf-8').read().split('\n\n')[0:-1]
     else:
         data = open(args.train_path, 'r', encoding='utf-8')
         data_train = data.read().split('\n\n')[0:-1]
@@ -1232,11 +1331,11 @@ def main():
         val_list = data_list[0:int(0.13 * len(data_list))]
         data.close()
     if args.model == 'train':
-        # start trainning
+        # 开始训练
         train(model, device, train_list, multi_gpu, args, tokenizer, tb_writer)
-        # Model validation
+        # 模型验证
         if args.local_rank == 0:
-            min_model = ''
+            best_model = ''
             model_loss = []
             if args.eval_all_checkpoints:
                 checkpoints = [args.dialogue_model_output_path + c for c in
@@ -1244,32 +1343,49 @@ def main():
                 logger.info("Evaluate the following checkpoints: {}".format(checkpoints))
                 overstep = [0]
                 min_res = 100000
+                max_res = 0
                 for x in range(1, args.epochs + 1):
                     checkpoint = args.dialogue_model_output_path + 'model_epoch' + str(x)
-                    model = MT5ForConditionalGeneration.from_pretrained(checkpoint)
+                    if args.cl:
+                        model = MT5ForConditionalGeneration.from_pretrained(checkpoint)
+                    else:
+                        model = modeling_mt5_cl.MT5ForConditionalGeneration.from_pretrained(checkpoint)
                     logger.info("Evaluate the checkpoint: {}".format(checkpoint))
                     model.resize_token_embeddings(vocab_size)
                     model.to(device)
-                    result = evaluate(model, device, val_list, multi_gpu, args, tokenizer, tb_writer, overstep)
-                    model_loss.append([result, checkpoint])
-                    if result < min_res:
-                        min_res = result
-                        min_model = checkpoint
-                logger.info("the best model is " + min_model)
+                    if args.evaluate_type == 'loss':
+                        result = evaluate_loss(model, device, val_list, multi_gpu, args, tokenizer, tb_writer, overstep)
+                        model_loss.append([result, checkpoint])
+                        if result < min_res:
+                            min_res = result
+                            best_model = checkpoint
+                    else:
+                        result = evaluate_acc(model, device, val_list, args, tokenizer)
+                        model_loss.append([result, checkpoint])
+                        if result > max_res:
+                            max_res = result
+                            best_model = checkpoint
+                logger.info("the best model is " + best_model)
                 print("model_loss", sorted(model_loss, key=lambda model_loss: model_loss[0], reverse=True))
             tb_writer.close()
             # min_model = 'model/medmt5_com_pl_e2e_num5_seed5_pre20_model/model_epoch5/'
-            model = MT5ForConditionalGeneration.from_pretrained(min_model)
+            if args.cl:
+                model = MT5ForConditionalGeneration.from_pretrained(checkpoint)
+            else:
+                model = modeling_mt5_cl.MT5ForConditionalGeneration.from_pretrained(checkpoint)
             model.to(device)
-            generate(model, tokenizer, test_list, args, device)
-
+            generate(model, tokenizer, test_list1, args, device)
     if args.model == 'test':
-        min_model = 'model/mt5_ppl_WON_ft3_model/model_epoch19/'
-        model = MT5ForConditionalGeneration.from_pretrained(min_model)
+        #min_model = 'model/mt5_ppl_WON_ft3_model/model_epoch19/'
+        min_model = args.pretrained_model
+        if args.cl:
+            model = MT5ForConditionalGeneration.from_pretrained(checkpoint)
+        else:
+            model = modeling_mt5_cl.MT5ForConditionalGeneration.from_pretrained(checkpoint)
         model.to(device)
         test_result1 = 'output/mt5_argue_nlu_ft3.json'
         test_result2 = 'output/mt5_argue_dpl_nono.json'
-        generate(model, tokenizer, test_list, args, device)
+        generate(model, tokenizer, test_list1, args, device)
         #generate_new(model, tokenizer, test_list, args, device,test_result1,test_result2)
 if __name__ == '__main__':
     main()

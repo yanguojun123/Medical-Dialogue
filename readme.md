@@ -5,15 +5,9 @@ In this work, we first build a M^2-MedDialog dataset, which contains 1,557 conve
 We demonstrate the results achieved by the benchmarks so far through extensive experiments on M^2-MedDialog. We release the dataset, the code, as well as the evaluation scripts to facilitate future research in this important research direction.
  
 
-# 2. [Data](https://xxx)
-The following three kinds datasets are fine tuned in order during training.
-
-1) train_pseudo_labeling.txt,dev_pseudo_labeling.txt: We use pseudo labeling algorithm to automatically label large-scale conversations called M^2-MedDialog-large.
-2) train_natural_perturbation.txt,dev_natural_perturbation.txt: We use three methods of natural perturbation to enhance labeled date.
-3) train_human_annotation.txt,dev_human_annotation.txt,test_human_annotation.txt: We process the manually labeled data to get the dataset M^2-MedDialog-base.
-
-
-The origin labeled dialogues dataset is provided as json format:
+# 2. Data
+The dataset contains:1) [ReMeDi-large.json](https://drive.google.com/drive/folders/1nxVEci21eU5KSejiWM4fwRlRELvkncpe?usp=sharing) (The dataset is large, so we save it with additional link.) 2) ReMeDi-base.json
+The ReMeDi-base/large dataset is provided as json format:
 * dialogue_id
 * information (turn list)
    * turn_id
@@ -27,7 +21,11 @@ The origin labeled dialogues dataset is provided as json format:
       * value1
       * value2
 
-    
+And the following three kinds data are processed to train model or evaluate.
+
+1) train_pseudo_labeling.txt,dev_pseudo_labeling.txt: We use pseudo labeling algorithm to automatically label large-scale conversations called M^2-MedDialog-large.
+2) train_natural_perturbation.txt,dev_natural_perturbation.txt: We use three methods of natural perturbation to enhance labeled date.
+3) train_human_annotation.txt,dev_human_annotation.txt,test_human_annotation.txt: We process the manually labeled data to get the dataset M^2-MedDialog-base.
 # 3. Requirements
 Install the requirements within enviroment via pip:
 
@@ -74,7 +72,7 @@ You can use two commands to training & inference and evaluation respectively.
 
 For example:
 
-`sbatch run_gpt2.sh gpt2_test gpu06 4 human_annoation groundtruth`
+`sbatch run_gpt2.sh gpu06 gpt2_test `
 
 `sbatch eva.sh gpt2_test.json`
 
@@ -85,14 +83,31 @@ You can use two commands to training & inference and evaluation respectively.
 
 For example:
 
-`sbatch run_mt5.sh mt5_test gpu06 4 human_annotation nlu groundtruth`
+`sbatch run_mt5.sh gpu06 mt5_test`
 
 `sbatch eva.sh mt5_test.json`
 
 # 6. Annotation guideline
-The annotation guideline file.
+The folder contains contains the code and guidelines for the labeling system.
 
-`python plot.py`
+# 7. License
 
-# 7. Citation
-TBA
+All resources are licensed under the MIT license.
+
+# 8. Citation
+```@article{yan21medialog,
+  author    = {Guojun Yan and
+               Jiahuan Pei and
+               Pengjie Ren and
+               Zhumin Chen and
+               Zhaochun Ren and
+               Huasheng Liang},
+  title     = {M{\^{}}2-MedDialog: {A} Dataset and Benchmarks for Multi-domain Multi-service
+               Medical Dialogues},
+  journal   = {CoRR},
+  volume    = {abs/2109.00430},
+  year      = {2021},
+  url       = {https://arxiv.org/abs/2109.00430},
+  eprinttype = {arXiv}
+}
+```

@@ -8,21 +8,14 @@ import argparse
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 from tqdm import tqdm
-from torch.nn import DataParallel
 import logging
-from transformers.modeling_gpt2 import GPT2Config, GPT2LMHeadModel
+from transformers import GPT2Config, GPT2LMHeadModel
 from transformers import BertTokenizer
 from os.path import join, exists
-from itertools import zip_longest, chain
-from dataset import MyDataset
 from torch.utils.data import Dataset, DataLoader
 from torch.nn import CrossEntropyLoss
 from torch.utils.data.distributed import DistributedSampler
 import sys,re
-#from models.gpt2 import GPT2LMHeadModel
-from models.gpt2 import GPT2Config
-#from sklearn.model_selection import train_test_split
-#from sklearn.model_selection import KFold
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
@@ -31,6 +24,22 @@ import shutil
 PAD = '[PAD]'
 pad_id = 0
 logger = None
+
+class MyDataset(Dataset):
+    """
+
+    """
+
+    def __init__(self, data_list):
+        self.data_list = data_list
+
+    def __getitem__(self, index):
+        input_ids = self.data_list[index].strip()
+        input_ids = [int(token_id) for token_id in input_ids.split()]
+        return input_ids
+
+    def __len__(self):
+        return len(self.data_list)
 
 def repeatAction(str):
     """
@@ -55,6 +64,7 @@ def setup_train_args():
     parser.add_argument('--vocab_path', default='vocabulary/vocab_small.txt', type=str, required=False, help='Select vocabulary file')
     parser.add_argument('--train_raw_path', default='data/train.txt', type=str, required=False, help='Original training corpus')
     parser.add_argument('--dev_raw_path', default='data/dev.txt', type=str, required=False, help='Original dev corpus')
+    parser.add_argument('--test_path', default='data/test.txt', type=str, required=False, help='Original test corpus')
     parser.add_argument('--train_tokenized_path', default='data/train_tokenized.txt', type=str,
                         required=False,
                         help='The storage location of the data after tokenizing the original training corpus')
@@ -174,14 +184,14 @@ def create_model(args, vocab_size):
             model = GPT2LMHeadModel.from_pretrained(pretrained_model_name_or_path=None, config=args.model_config, state_dict=model_dict)
 
     else:  # If no pre training model is specified, the model is initialized
-        model_config = transformers.modeling_gpt2.GPT2Config.from_json_file(args.model_config)
+        model_config = transformers.GPT2Config.from_json_file(args.model_config)
         model = GPT2LMHeadModel(config=model_config)
         model_dict = model.state_dict()
         pe = model_dict['transformer.wpe.weight']
         ab = model_dict['transformer.h.0.attn.bias']
         print("pe:", pe[0:50, :])
         print("ab", ab[0:50, :])
-        exit(-1)
+        #exit(-1)
     # Adjust the size of voca of gpt2 model according to the vocabulary of tokenizer
     model.resize_token_embeddings(vocab_size)
     logger.info('model config:\n{}'.format(model.config.to_json_string()))
@@ -233,6 +243,7 @@ def preprocess_raw_data(raw_path, tokenized_path, tokenizer, n_ctx):
 
 
                     user_count = 0
+                    user_index = 0
                     if n_ctx-6 < len(dialogue_ids):#
                         for index, id in enumerate(dialogue_ids):
                             if id == currentuser_id:
@@ -505,7 +516,6 @@ def train(model, device, train_list, multi_gpu, args, tokenizer, tb_writer,overa
                 outputs = model.forward(input_ids=input_ids)
 
                 lossall, accuracy = calculate_loss_and_accuracy(outputs, labels=input_ids, device=device,
-                                                                tokenizer=tokenizer, args=args,
                                                                 special_index=special_index)
                 loss = lossall[0]
                 intent_loss = lossall[1]
@@ -602,16 +612,13 @@ def evaluate(model, device, dev_list, multi_gpu, args, tokenizer, tb_writer, ove
 
         for batch_idx, input_ids in enumerate(test_dataloader):
             special_index = (input_ids[:, 0:6] - np.ones((input_ids.size(0), 6), dtype=int)).to(device)
-            if args.cls_token:
-                cls_token = tokenizer.cls_token_id * torch.ones(input_ids.size(0), dtype=torch.long).unsqueeze(1)
-                input_ids = torch.cat((cls_token, input_ids[:, 6:]), 1).to(device)
-            else:
-                input_ids = input_ids[:, 6:].to(device)
+
+            input_ids = input_ids[:, 6:].to(device)
             # input_ids.to(device)
 
             outputs = model.forward(input_ids=input_ids)
             lossall, accuracy = calculate_loss_and_accuracy(outputs, labels=input_ids, device=device,
-                                                            special_index=special_index, tokenizer=tokenizer, args=args)
+                                                            special_index=special_index)
 
             loss = lossall[0]
             loss_epoch[0] += loss
@@ -648,7 +655,7 @@ def evaluate(model, device, dev_list, multi_gpu, args, tokenizer, tb_writer, ove
             loss_epoch[0] / batch_num, loss_epoch[1] / batch_num, loss_epoch[2] / batch_num, loss_epoch[3] / batch_num,
             accuracy_epoch / batch_num))
 
-    return loss_epoch[0]
+    return loss_epoch[0]/ batch_num
 
 
 def generate(tokenizer, model, args):
@@ -770,7 +777,7 @@ def generate(tokenizer, model, args):
                         indexed_tokens += [predicted_index]
 
                         temp = re.sub(' ', '', tokenizer.decode(predicted_index))
-                        print("temp:", temp)
+                        #print("temp:", temp)
                         '''if temp != '':
                             if  get_action and temp in predicted_text.split('<|endofaction|>')[1]:
                                 print("predicted_text:",predicted_text)
@@ -839,14 +846,14 @@ def generate(tokenizer, model, args):
                     if not get_action:
                         generated_actions.append(' ')
                     predicted_text = re.sub(' ', '', tokenizer.decode(indexed_tokens))
-                    print("predicted_text:", predicted_text)
+                    #print("predicted_text:", predicted_text)
                     if '<|response|>' in predicted_text and '<|endofresponse|>' in predicted_text:
                         generated_responses.append(
                             predicted_text.split('<|response|>')[1].split('<|endofresponse|>')[0])
                     else:
                         generated_responses.append(' ')
 
-        if args.input_type == 'predicted':
+        if args.inference_type == 'predicted':
             dialogue_pred_intent = []
             dialogue_pred_responses = []
             dialogue_pred_action = []
@@ -956,18 +963,18 @@ def main():
         logger.info('number of model parameters: {}'.format(num_parameters))
         # Preprocess the original data and convert the original corpus into the corresponding token_id
         if args.raw:
-            preprocess_raw_data(args.train_raw_path, args.train_tokenied_path, tokenizer, n_ctx)
-            preprocess_raw_data(args.dev_raw_path, args.dev_tokenied_path, tokenizer, n_ctx)
+            preprocess_raw_data(args.train_raw_path, args.train_tokenized_path, tokenizer, n_ctx)
+            preprocess_raw_data(args.dev_raw_path, args.dev_tokenized_path, tokenizer, n_ctx)
         tb_writer, multi_gpu= init(args)
 
     model = DDP(model, device_ids=[args.local_rank], output_device=args.local_rank, find_unused_parameters=True)
     # load data
     logger.info("loading traing data")
-    if args.raw:
-        with open(args.train_tokenized_path, "r", encoding="utf8") as f:
-            data_train = f.read()
-        with open(args.dev_tokenized_path, "r", encoding="utf8") as d:
-            data_dev = d.read()
+
+    with open(args.train_tokenized_path, "r", encoding="utf8") as f:
+        data_train = f.read()
+    with open(args.dev_tokenized_path, "r", encoding="utf8") as d:
+        data_dev = d.read()
     train_list = []
     test_list = []
     if args.ft2:
@@ -1001,28 +1008,29 @@ def main():
                                                                    find_unused_parameters=True)'''
     # start train
 
-    train(model, device, train_list, multi_gpu, args, tokenizer, tb_writer, overall_step)
+    #train(model, device, train_list, multi_gpu, args, tokenizer, tb_writer, overall_step)
     # Model validation
     if args.local_rank == 0:
-        best_model = ''
-        if args.eval_all_checkpoints:
-            checkpoints = [args.dialogue_model_output_path + c for c in
-                           sorted(os.listdir(args.dialogue_model_output_path))[1:-1]]
-            logger.info("Evaluate the following checkpoints: {}".format(checkpoints))
-            #overstep = [0]
-            min_loss = 100000
-            for x in range(1, args.epochs + 1):
-                checkpoint = args.dialogue_model_output_path + 'model_epoch' + str(x)
-                model = GPT2LMHeadModel.from_pretrained(checkpoint)
-                logger.info("Evaluate the checkpoint: {}".format(checkpoint))
-                model.resize_token_embeddings(vocab_size)
-                model.to(device)
-                result = evaluate(model, device, test_list, multi_gpu, args, tokenizer, tb_writer, overall_step)
-                if result < min_loss:
-                    min_loss = result
-                    best_model = checkpoint
-            logger.info("the best model is " + best_model)
-        tb_writer.close()
+        # best_model = ''
+        # if args.eval_all_checkpoints:
+        #     checkpoints = [args.dialogue_model_output_path + c for c in
+        #                    sorted(os.listdir(args.dialogue_model_output_path))[1:-1]]
+        #     logger.info("Evaluate the following checkpoints: {}".format(checkpoints))
+        #     #overstep = [0]
+        #     min_loss = 100000
+        #     for x in range(1, args.epochs + 1):
+        #         checkpoint = args.dialogue_model_output_path + 'model_epoch' + str(x)
+        #         model = GPT2LMHeadModel.from_pretrained(checkpoint)
+        #         logger.info("Evaluate the checkpoint: {}".format(checkpoint))
+        #         model.resize_token_embeddings(vocab_size)
+        #         model.to(device)
+        #         result = evaluate(model, device, test_list, multi_gpu, args, tokenizer, tb_writer, overall_step)
+        #         if result < min_loss:
+        #             min_loss = result
+        #             best_model = checkpoint
+        #     logger.info("the best model is " + best_model)
+        # tb_writer.close()
+        best_model = 'model/gpt2_test_model/model_epoch20/'
         generate(tokenizer, best_model, args)
 
 if __name__ == '__main__':

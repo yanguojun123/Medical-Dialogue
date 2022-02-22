@@ -1,19 +1,32 @@
-from nlgeval import compute_metrics
 import nltk
 from nltk.translate.meteor_score import *
 from nltk.translate.bleu_score import corpus_bleu, sentence_bleu, SmoothingFunction
 # nlgeval = NLGEval()
-from common.args import ArgsParser
+import argparse
 import numpy as np
 import json
 import re
 from sklearn.metrics import f1_score, recall_score, precision_score
 from typing import Iterable, Tuple, Dict, Set, List
-from allennlp.training.metrics.metric import Metric
+#from allennlp.training.metrics.metric import Metric
 import copy
 
+class ArgsParser(object):
+    def __init__(self):
+        parser = argparse.ArgumentParser()
 
-class NLTK_BLEU(Metric):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--evaluation_path', default='result.json', type=str, required=False, help='evaluation_path')
+        parser.add_argument('--evaluation_task', default='nlu', type=str, required=False,
+                            help='evaluation_path')
+        self.parser = parser
+
+    def parse(self):
+        args = self.parser.parse_args()
+
+        return args
+
+class NLTK_BLEU():
     def __init__(
             self,
             smoothfunc: SmoothingFunction = None,
@@ -444,8 +457,8 @@ def generate_text():
         # hyp.write('\n')
     ref.close()
     hyp.close()
-    metric['RG']['distinct1'] = distinct1(hyp_list_1)
-    metric['RG']['distinct2'] = distinct2(hyp_list_1)
+    # metric['RG']['distinct1'] = distinct1(hyp_list_1)
+    # metric['RG']['distinct2'] = distinct2(hyp_list_1)
     print(metric)
 
     meteor_result = 0
@@ -505,14 +518,14 @@ def generate_text():
 
 
 def main():
-    if args.intent_evaluation:
+    if args.evaluation_task == 'nlu':
         intent_evaluation()
     if args.action_evaluation:
         action_evaluation()
     if args.generate_evaluation:
         #generate_gpt()
         #intent_evaluation()
-        action_evaluation()
+        #action_evaluation()
         generate_text()
 
 
