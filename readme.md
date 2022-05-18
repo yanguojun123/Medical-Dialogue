@@ -1,9 +1,8 @@
 # M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
 # 1. Introduction 
-Medical dialogue systems(MDSs) aim to assist doctors and patients with a range of professional medical services, i.e., diagnosis, consultation, and treatment.
-However, one-stop MDS are still challenging because:(1) no dataset has such large-scale dialogues that contain both multiple medical services and fine-grained medical labels (i.e., intents, actions, slots, values);(2) no model has addressed a MDS based on multiple-service conversations in a unified framework.(3) massive unlabeled data is unexplored. In this work, we first build a M^2-MedDialog dataset that contains 96,965 conversations between doctors and patients, including 1,557 conversations with fine-gained labels. It covers 843 types of diseases, 5,228 medical entities, and 3 specialties of medical services across 40 domains.
-
-To the best of our knowledge, it is the only medical dialogue dataset that includes both multiple medical services and fine-grained medical labels. Then, we formulate a one-stop MDS as a sequence-to-sequence generation problem. We unify a MDS with causal language modeling and conditional causal language modeling. Specifically, we employ several pretrained models (i.e., BERT-WWM, BERT-MED, GPT2, and MT5) and their variants as benchmarks on M^2-MedDialog dataset. We also propose a self-supervised contrastive learning(SCL) method to expand M^2-MedDialog dataset and enhance the training of the state-of-the-art pretrained models. We demonstrate the results achieved by the benchmarks so far through extensive experiments on M^2-MedDialog.
+In this work, we contribute the following resources:
+(1) A dataset contains 96,965 conversations between doctors and patients, including 1,557 conversations with fine-gained labels. It covers 843 types of diseases, 5,228 medical entities, and 3 specialties of medical services across 40 domains. To the best of our knowledge, the ReMeDi dataset is the only medical dialogue dataset that covers multiple domains and services, and has fine-grained medical labels.
+(2) Benchmark methods: (a) pretrained models (i.e., BERT-WWM, BERT-MED, GPT2, and MT5) trained, validated, and tested on the ReMeDi dataset, and (b) a self-supervised contrastive learning(SCL) method to expand the ReMeDi dataset and enhance the training of the state-of-the-art pretrained models. The paper link is [https://arxiv.org/abs/2109.00430](https://arxiv.org/abs/2109.00430)
  
 
 # 2. Data
@@ -96,19 +95,24 @@ The folder contains contains the code and guidelines for the labeling system.
 All resources are licensed under the MIT license.
 
 # 8. Citation
-```@article{yan21medialog,
+```@article{DBLP:journals/corr/abs-2109-00430,
   author    = {Guojun Yan and
                Jiahuan Pei and
                Pengjie Ren and
-               Zhumin Chen and
                Zhaochun Ren and
-               Huasheng Liang},
-  title     = {M{\^{}}2-MedDialog: {A} Dataset and Benchmarks for Multi-domain Multi-service
-               Medical Dialogues},
+               Xin Xin and
+               Huasheng Liang and
+               Maarten de Rijke and 
+               Zhumin Chen},
+  title     = {ReMeDi: Resources for Multi-domain, Multi-service, Medical Dialogues},
   journal   = {CoRR},
   volume    = {abs/2109.00430},
   year      = {2021},
   url       = {https://arxiv.org/abs/2109.00430},
-  eprinttype = {arXiv}
+  eprinttype = {arXiv},
+  eprint    = {2109.00430},
+  timestamp = {Mon, 20 Sep 2021 16:29:41 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2109-00430.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 ```
