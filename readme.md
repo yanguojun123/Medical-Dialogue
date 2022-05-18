@@ -2,6 +2,7 @@
 # 1. Introduction 
 Medical dialogue systems(MDSs) aim to assist doctors and patients with a range of professional medical services, i.e., diagnosis, consultation, and treatment.
 However, one-stop MDS are still challenging because:(1) no dataset has such large-scale dialogues that contain both multiple medical services and fine-grained medical labels (i.e., intents, actions, slots, values);(2) no model has addressed a MDS based on multiple-service conversations in a unified framework.(3) massive unlabeled data is unexplored. In this work, we first build a M^2-MedDialog dataset that contains 96,965 conversations between doctors and patients, including 1,557 conversations with fine-gained labels. It covers 843 types of diseases, 5,228 medical entities, and 3 specialties of medical services across 40 domains.
+
 To the best of our knowledge, it is the only medical dialogue dataset that includes both multiple medical services and fine-grained medical labels. Then, we formulate a one-stop MDS as a sequence-to-sequence generation problem. We unify a MDS with causal language modeling and conditional causal language modeling. Specifically, we employ several pretrained models (i.e., BERT-WWM, BERT-MED, GPT2, and MT5) and their variants as benchmarks on M^2-MedDialog dataset. We also propose a self-supervised contrastive learning(SCL) method to expand M^2-MedDialog dataset and enhance the training of the state-of-the-art pretrained models. We demonstrate the results achieved by the benchmarks so far through extensive experiments on M^2-MedDialog.
  
 
