@@ -1,8 +1,8 @@
 # ReMeDi: Resources for Multi-domain, Multi-service, Medical Dialogues
 # 1. Introduction 
 In this work, we contribute the following resources:
-(1) A dataset contains 96,965 conversations between doctors and patients, including 1,557 conversations with fine-gained labels. It covers 843 types of diseases, 5,228 medical entities, and 3 specialties of medical services across 40 domains. To the best of our knowledge, the ReMeDi dataset is the only medical dialogue dataset that covers multiple domains and services, and has fine-grained medical labels.
-(2) Benchmark methods: (a) pretrained models (i.e., BERT-WWM, BERT-MED, GPT2, and MT5) trained, validated, and tested on the ReMeDi dataset, and (b) a self-supervised contrastive learning(SCL) method to expand the ReMeDi dataset and enhance the training of the state-of-the-art pretrained models. The paper link is [https://arxiv.org/abs/2109.00430](https://arxiv.org/abs/2109.00430)
+- (1) A dataset contains 96,965 conversations between doctors and patients, including 1,557 conversations with fine-gained labels. It covers 843 types of diseases, 5,228 medical entities, and 3 specialties of medical services across 40 domains. To the best of our knowledge, the ReMeDi dataset is the only medical dialogue dataset that covers multiple domains and services, and has fine-grained medical labels.
+- (2) Benchmark methods: (a) pretrained models (i.e., BERT-WWM, BERT-MED, GPT2, and MT5) trained, validated, and tested on the ReMeDi dataset, and (b) a self-supervised contrastive learning(SCL) method to expand the ReMeDi dataset and enhance the training of the state-of-the-art pretrained models. The paper link is [https://arxiv.org/abs/2109.00430](https://arxiv.org/abs/2109.00430)
  
 
 # 2. Data
@@ -103,5 +103,4 @@ All resources are licensed under the MIT license.
   year={2022}
   url={https://arxiv.org/abs/2109.00430},
 }
-
 ```
