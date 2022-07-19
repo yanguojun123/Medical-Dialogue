@@ -95,24 +95,13 @@ The folder contains contains the code and guidelines for the labeling system.
 All resources are licensed under the MIT license.
 
 # 8. Citation
-```@article{DBLP:journals/corr/abs-2109-00430,
-  author    = {Guojun Yan and
-               Jiahuan Pei and
-               Pengjie Ren and
-               Zhaochun Ren and
-               Xin Xin and
-               Huasheng Liang and
-               Maarten de Rijke and 
-               Zhumin Chen},
-  title     = {ReMeDi: Resources for Multi-domain, Multi-service, Medical Dialogues},
-  journal   = {CoRR},
-  volume    = {abs/2109.00430},
-  year      = {2021},
-  url       = {https://arxiv.org/abs/2109.00430},
-  eprinttype = {arXiv},
-  eprint    = {2109.00430},
-  timestamp = {Mon, 20 Sep 2021 16:29:41 +0200},
-  biburl    = {https://dblp.org/rec/journals/corr/abs-2109-00430.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+```
+@inproceedings{yan2022remedi,
+  title={ReMeDi: Resources for Multi-domain, Multi-service, Medical Dialogues},
+  booktitle = {SIGIR},
+  author={Yan, Guojun and Pei, Jiahuan and Ren, Pengjie and Ren, Zhaochun and Xin, Xin and Liang, Huasheng and de Rijke, Maarten and Chen, Zhumin},
+  year={2022}
+  url={https://arxiv.org/abs/2109.00430},
 }
+
 ```
