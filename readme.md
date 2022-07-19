@@ -1,4 +1,4 @@
-# M^2-MedDialog: A Dataset and Benchmarks for Multi-domain Multi-service Medical Dialogues
+# ReMeDi: Resources for Multi-domain, Multi-service, Medical Dialogues
 # 1. Introduction 
 In this work, we contribute the following resources:
 (1) A dataset contains 96,965 conversations between doctors and patients, including 1,557 conversations with fine-gained labels. It covers 843 types of diseases, 5,228 medical entities, and 3 specialties of medical services across 40 domains. To the best of our knowledge, the ReMeDi dataset is the only medical dialogue dataset that covers multiple domains and services, and has fine-grained medical labels.
